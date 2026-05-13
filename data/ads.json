@@ -1,0 +1,42 @@
+[
+  {
+    "id": "ad-1",
+    "name": "Header Banner",
+    "position": "header",
+    "size": "728x90",
+    "enabled": true,
+    "code": "",
+    "createdAt": "2026-05-13T02:36:56.041Z",
+    "updatedAt": "2026-05-13T02:36:56.041Z"
+  },
+  {
+    "id": "ad-2",
+    "name": "Sidebar Ad",
+    "position": "sidebar",
+    "size": "300x250",
+    "enabled": true,
+    "code": "",
+    "createdAt": "2026-05-13T02:36:56.041Z",
+    "updatedAt": "2026-05-13T02:36:56.041Z"
+  },
+  {
+    "id": "ad-3",
+    "name": "In-Content Ad",
+    "position": "content",
+    "size": "300x250",
+    "enabled": true,
+    "code": "",
+    "createdAt": "2026-05-13T02:36:56.041Z",
+    "updatedAt": "2026-05-13T02:36:56.041Z"
+  },
+  {
+    "id": "ad-4",
+    "name": "Footer Banner",
+    "position": "footer",
+    "size": "728x90",
+    "enabled": true,
+    "code": "",
+    "createdAt": "2026-05-13T02:36:56.041Z",
+    "updatedAt": "2026-05-13T02:36:56.041Z"
+  }
+]

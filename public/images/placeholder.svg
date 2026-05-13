@@ -1,0 +1,6 @@
+<svg width="800" height="400" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="400" fill="#1A1625"/>
+  <circle cx="400" cy="200" r="80" fill="#8B5CF6" opacity="0.3"/>
+  <text x="400" y="210" font-family="Cinzel, serif" font-size="24" fill="#8B5CF6" text-anchor="middle">Slay the Spire 2</text>
+  <text x="400" y="240" font-family="Inter, sans-serif" font-size="12" fill="#94A3B8" text-anchor="middle">Guide Cover Image</text>
+</svg>

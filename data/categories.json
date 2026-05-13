@@ -1,0 +1,42 @@
+[
+  {
+    "id": "cat-1",
+    "name": "Card Guides",
+    "slug": "card-guides",
+    "description": "Detailed guides for all cards",
+    "icon": "layers",
+    "color": "#8B5CF6"
+  },
+  {
+    "id": "cat-2",
+    "name": "Character Builds",
+    "slug": "character-builds",
+    "description": "Character strategies and builds",
+    "icon": "user",
+    "color": "#F59E0B"
+  },
+  {
+    "id": "cat-3",
+    "name": "Boss Strategies",
+    "slug": "boss-strategies",
+    "description": "How to defeat bosses",
+    "icon": "shield",
+    "color": "#EF4444"
+  },
+  {
+    "id": "cat-4",
+    "name": "Combos & Synergies",
+    "slug": "combos",
+    "description": "Card combinations and synergies",
+    "icon": "zap",
+    "color": "#10B981"
+  },
+  {
+    "id": "cat-5",
+    "name": "Tips & Tricks",
+    "slug": "tips",
+    "description": "General tips and tricks",
+    "icon": "lightbulb",
+    "color": "#3B82F6"
+  }
+]

@@ -1,0 +1,122 @@
+[
+  {
+    "id": "art-1",
+    "title": "Ironclad Complete Guide: Best Cards and Synergies",
+    "slug": "ironclad-complete-guide",
+    "content": "# Ironclad Complete Guide\n\nThe Ironclad is the first playable character in Slay the Spire 2. This guide covers everything you need to know about mastering this powerful warrior.\n\n## Getting Started\n\nThe Ironclad starts with a focus on Strength and Block mechanics. Understanding these two systems is crucial for success.\n\n## Best Starting Cards\n\n- **Bash** - Essential for applying Vulnerable\n- **Strike** - Your basic attack\n- **Defend** - Basic block card\n- **Cleave** - AoE damage for hallway fights\n\n## Recommended Early Picks\n\n1. Inflame - Strong开局\n2. Shrug It Off - Good block\n3. Pommel Strike - Card draw\n4. Iron Wave - Hybrid offense/defense\n\n## Strength Build Guide\n\nA Strength build focuses on maximizing damage through Strength stacking. Key cards include:\n\n- **Demon Form** - Core engine\n- **Spot Weakness** - Free strength\n- **Inflame** - Weakness synergy\n- **Bloodletting** - Energy generation\n\n## Block Build Guide\n\nFor a more defensive approach:\n\n- **Feel No Pain** - Thorns synergy\n- **Metallicize** - Passive block\n- **Shockwave** - Mass weak/vulnerable\n- **Entrench** - Double your block\n\n## Tips for Success\n\n1. Don't neglect card draw\n2. Balance offense and defense\n3. Save potions for bosses\n4. Know when to skip\n5. Position matters in multi-enemy fights",
+    "excerpt": "Master the Ironclad with our comprehensive guide covering best cards, synergies, and winning strategies.",
+    "coverImage": "ironclad.jpg",
+    "categoryId": "cat-2",
+    "authorId": "user-1",
+    "status": "published",
+    "viewCount": 1543,
+    "tags": [
+      "Ironclad",
+      "Builds",
+      "Beginner"
+    ],
+    "createdAt": "2026-01-15T10:00:00Z",
+    "updatedAt": "2026-01-15T10:00:00Z",
+    "publishedAt": "2026-01-15T10:00:00Z"
+  },
+  {
+    "id": "art-2",
+    "title": "Silent Decks: Poison and Shiv Strategies",
+    "slug": "silent-decks-guide",
+    "content": "# Silent Decks: Poison and Shiv Strategies\n\nThe Silent excels at poison mechanics and quick, precise attacks. This guide explores both main archetypes.\n\n## Understanding Poison\n\nPoison is a powerful status effect that deals damage at the end of each turn. Stacking poison can eliminate even the toughest enemies.\n\n## Poison Deck Core Cards\n\n- **Cilent's Poison** - Free poison\n- **Catalyst** - Multiplies poison\n- **Bouncing Flask** - AoE poison\n- **Deadly Poison** - Stacking poison\n\n## Shiv Strategy\n\nShivs excel at triggering effects that activate on card play.\n\n## Key Shiv Cards\n\n- **Blade Dance** - Generate shivs\n- **Accuracy** - Shiv power\n- **Terror** - Instant kill potential\n- **Noxious Fumes** - Passive poison",
+    "excerpt": "Explore poison and shiv strategies for the Silent character in Slay the Spire 2.",
+    "coverImage": "silent.jpg",
+    "categoryId": "cat-2",
+    "authorId": "user-1",
+    "status": "published",
+    "viewCount": 893,
+    "tags": [
+      "Silent",
+      "Poison",
+      "Shivs"
+    ],
+    "createdAt": "2026-01-20T14:30:00Z",
+    "updatedAt": "2026-01-20T14:30:00Z",
+    "publishedAt": "2026-01-20T14:30:00Z"
+  },
+  {
+    "id": "art-3",
+    "title": "How to Beat the Act 3 Boss: The Collector",
+    "slug": "beat-the-collector",
+    "content": "# How to Beat the Collector\n\nThe Collector is one of the most challenging bosses in Act 3. This guide will help you prepare.\n\n## Boss Overview\n\nThe Collector has three phases and summons minions. Here's what to expect:\n\n- Phase 1: Moderate damage, healing\n- Phase 2: Summons enemies\n- Phase 3: Heavy damage burst\n\n## Recommended Preparations\n\nBefore the fight, ensure you have:\n- Artifact potions\n- Strong frontloaded damage\n- Sustained damage capability\n- Good block options\n\n## Key Cards for This Fight\n\n1. **Glass Knife** - Burst damage\n2. **Shatter** - Destroy his shields\n3. **Blizzard** - Passive AoE\n4. **Storm** - Power card\n\n## Strategy Tips\n\nThe key to this fight is speed. Don't let the Collector heal or summon too many minions. Focus fire on priority targets.",
+    "excerpt": "Complete strategy guide for defeating The Collector boss in Act 3.",
+    "coverImage": "collector.jpg",
+    "categoryId": "cat-3",
+    "authorId": "user-1",
+    "status": "published",
+    "viewCount": 2103,
+    "tags": [
+      "Boss",
+      "Act 3",
+      "Strategy"
+    ],
+    "createdAt": "2026-02-01T09:00:00Z",
+    "updatedAt": "2026-02-01T09:00:00Z",
+    "publishedAt": "2026-02-01T09:00:00Z"
+  },
+  {
+    "id": "art-4",
+    "title": "Defect Power Cards: Ultimate Guide",
+    "slug": "defect-power-cards",
+    "content": "# Defect Power Cards Guide\n\nThe Defect revolves around orb management and power cards. This guide covers all essential power cards.\n\n## Core Powers\n\n**Darkness** - Your primary damage source\n**Lightning** - Frontloaded damage\n**Frost** - Defense through orbs\n**Plasma** - Energy generation\n\n## Essential Power Cards\n\n1. **Dualcast** - Evoke twice\n2. **Multicast** - Evoke multiple\n3. **Recycle** - Card draw\n4. **Cold Snap** - Frost generation\n\n## Energy Management\n\nLearn to maximize your orb slots and energy efficiency.",
+    "excerpt": "Master the Defect's power cards with this comprehensive guide.",
+    "coverImage": "defect.jpg",
+    "categoryId": "cat-1",
+    "authorId": "user-1",
+    "status": "published",
+    "viewCount": 758,
+    "tags": [
+      "Defect",
+      "Cards",
+      "Powers"
+    ],
+    "createdAt": "2026-02-10T11:00:00Z",
+    "updatedAt": "2026-02-10T11:00:00Z",
+    "publishedAt": "2026-02-10T11:00:00Z"
+  },
+  {
+    "id": "art-5",
+    "title": "Top 10 Tips for New Players",
+    "slug": "top-10-tips-new-players",
+    "content": "# Top 10 Tips for New Players\n\nStarting out in Slay the Spire 2? Here are the essential tips you need to know.\n\n## 1. Don't Always Take Damage\n\nSometimes taking damage is unavoidable, but often you can play smarter to minimize it.\n\n## 2. Card Rarity Isn't Everything\n\nCommon cards can be incredibly powerful. Don't dismiss them.\n\n## 3. Skip When Unsure\n\nIf you don't need a card, skip. A smaller deck is often better.\n\n## 4. Save Potions for Emergencies\n\nPotions can be life-saving. Don't waste them on easy fights.\n\n## 5. Learn Enemy Intentions\n\nUnderstanding enemy patterns is key to victory.\n\n## 6. Balance Offense and Defense\n\nYou need both damage and block to succeed.\n\n## 7. Know Your Character\n\nEach character has unique strengths. Play to them.\n\n## 8. Don't Fear the Neow Bonus\n\nEarly game bonuses can set you up for success.\n\n## 9. Practice Makes Perfect\n\nEvery run teaches you something new.\n\n## 10. Have Fun!\n\nThere's no single \"right\" way to play.",
+    "excerpt": "Essential tips for new players starting their Slay the Spire 2 journey.",
+    "coverImage": "tips.jpg",
+    "categoryId": "cat-5",
+    "authorId": "user-1",
+    "status": "published",
+    "viewCount": 3202,
+    "tags": [
+      "Beginner",
+      "Tips",
+      "General"
+    ],
+    "createdAt": "2026-02-15T16:00:00Z",
+    "updatedAt": "2026-02-15T16:00:00Z",
+    "publishedAt": "2026-02-15T16:00:00Z"
+  },
+  {
+    "id": "art-6",
+    "title": "Card Synergy Combinations Guide",
+    "slug": "card-synergy-combinations",
+    "content": "# Card Synergy Combinations Guide\n\nUnderstanding card synergies is crucial for building powerful decks. Here are the best combinations.\n\n## Ironclad Synergies\n\n**Strength + Vulnerable** - Devastating damage\n**Block + Thorns** - Offensive defense\n**Bleed + Drawing** - Sustained damage\n\n## Silent Synergies\n\n**Poison + Catalyst** - Explosive damage\n**Shiv + Dexterity** - Quick damage\n**Weak + Low Cost** - Efficient fights\n\n## Defect Synergies\n\n**Orb Generation + Evoke** - Consistent damage\n**Frost + Focus** - Massive block\n**Darkness + Evil** - Lategame power\n\n## Universal Synergies\n\n- Card draw + Energy management\n- Artifact + Status prevention\n- Weak + Damage cards",
+    "excerpt": "Discover the best card synergies and combinations for dominant gameplay.",
+    "coverImage": "synergy.jpg",
+    "categoryId": "cat-4",
+    "authorId": "user-1",
+    "status": "published",
+    "viewCount": 1879,
+    "tags": [
+      "Synergy",
+      "Combos",
+      "Advanced"
+    ],
+    "createdAt": "2026-02-20T13:00:00Z",
+    "updatedAt": "2026-02-20T13:00:00Z",
+    "publishedAt": "2026-02-20T13:00:00Z"
+  }
+]
