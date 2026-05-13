@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    const { password: _, ...safeUser } = user;
+    const { password: _password, ...safeUser } = user;
     return NextResponse.json(safeUser);
   } catch {
     return NextResponse.json({ error: "Failed to get profile" }, { status: 500 });
