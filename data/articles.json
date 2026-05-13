@@ -9,7 +9,7 @@
     "categoryId": "cat-2",
     "authorId": "user-1",
     "status": "published",
-    "viewCount": 1543,
+    "viewCount": 1545,
     "tags": [
       "Ironclad",
       "Builds",
@@ -29,7 +29,7 @@
     "categoryId": "cat-2",
     "authorId": "user-1",
     "status": "published",
-    "viewCount": 893,
+    "viewCount": 894,
     "tags": [
       "Silent",
       "Poison",
@@ -89,7 +89,7 @@
     "categoryId": "cat-5",
     "authorId": "user-1",
     "status": "published",
-    "viewCount": 3202,
+    "viewCount": 3204,
     "tags": [
       "Beginner",
       "Tips",
@@ -109,7 +109,7 @@
     "categoryId": "cat-4",
     "authorId": "user-1",
     "status": "published",
-    "viewCount": 1879,
+    "viewCount": 1880,
     "tags": [
       "Synergy",
       "Combos",

@@ -1,4 +1,4 @@
-import { promises as fs } from "fs";
+import { promises as fs, readFileSync, writeFileSync, existsSync, mkdirSync } from "fs";
 import path from "path";
 import { Article, Category, Tag, User, AdPlacement, PageView } from "./types";
 import { generateId } from "./utils";
@@ -10,6 +10,29 @@ const TAGS_FILE = path.join(DATA_DIR, "tags.json");
 const USERS_FILE = path.join(DATA_DIR, "users.json");
 const ADS_FILE = path.join(DATA_DIR, "ads.json");
 const VIEWS_FILE = path.join(DATA_DIR, "views.json");
+
+// Synchronous versions for API routes
+export function readData<T>(filename: string): T {
+  const filePath = path.join(DATA_DIR, filename);
+  try {
+    const data = readFileSync(filePath, "utf-8");
+    return JSON.parse(data);
+  } catch {
+    return [] as unknown as T;
+  }
+}
+
+export function writeData<T>(filename: string, data: T): void {
+  const filePath = path.join(DATA_DIR, filename);
+  ensureDataDirSync();
+  writeFileSync(filePath, JSON.stringify(data, null, 2));
+}
+
+function ensureDataDirSync() {
+  if (!existsSync(DATA_DIR)) {
+    mkdirSync(DATA_DIR, { recursive: true });
+  }
+}
 
 async function ensureDataDir() {
   try {

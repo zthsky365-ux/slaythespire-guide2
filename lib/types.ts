@@ -28,6 +28,8 @@ export interface Tag {
   id: string;
   name: string;
   slug: string;
+  color: string;
+  articleCount: number;
 }
 
 export interface User {

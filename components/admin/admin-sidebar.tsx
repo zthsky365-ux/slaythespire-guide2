@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, 
   FileText, 
@@ -11,7 +11,8 @@ import {
   BarChart3, 
   Settings,
   LogOut,
-  Sword
+  Sword,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -20,6 +21,7 @@ const adminNavItems = [
   { href: "/admin/articles", label: "Articles", icon: FileText },
   { href: "/admin/categories", label: "Categories", icon: FolderTree },
   { href: "/admin/tags", label: "Tags", icon: Tags },
+  { href: "/admin/users", label: "Users", icon: Users },
   { href: "/admin/ads", label: "Ad Placements", icon: Megaphone },
   { href: "/admin/stats", label: "Statistics", icon: BarChart3 },
   { href: "/admin/settings", label: "Settings", icon: Settings },
@@ -27,6 +29,17 @@ const adminNavItems = [
 
 export function AdminSidebar() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      router.push("/");
+      router.refresh();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <aside className="w-64 bg-card border-r border-border min-h-screen p-4 flex flex-col">
@@ -75,6 +88,7 @@ export function AdminSidebar() {
           Back to Site
         </Link>
         <button
+          onClick={handleLogout}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-muted-foreground hover:bg-destructive/10 hover:text-destructive transition-all duration-200"
         >
           <LogOut className="h-5 w-5" />

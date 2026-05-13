@@ -1,0 +1,10 @@
+[
+  { "id": "tag-1", "name": "Ironclad", "slug": "ironclad", "color": "#EF4444", "articleCount": 2 },
+  { "id": "tag-2", "name": "Silent", "slug": "silent", "color": "#8B5CF6", "articleCount": 1 },
+  { "id": "tag-3", "name": "Defect", "slug": "defect", "color": "#3B82F6", "articleCount": 1 },
+  { "id": "tag-4", "name": "Beginner", "slug": "beginner", "color": "#10B981", "articleCount": 1 },
+  { "id": "tag-5", "name": "Advanced", "slug": "advanced", "color": "#F59E0B", "articleCount": 1 },
+  { "id": "tag-6", "name": "Boss", "slug": "boss", "color": "#EC4899", "articleCount": 1 },
+  { "id": "tag-7", "name": "Cards", "slug": "cards", "color": "#06B6D4", "articleCount": 2 },
+  { "id": "tag-8", "name": "Synergy", "slug": "synergy", "color": "#84CC16", "articleCount": 1 }
+]
