@@ -1,43 +1,19 @@
 [
   {
-    "articleId": "art-1",
-    "path": "/articles/ironclad-complete-guide",
-    "visitedAt": "2026-05-13T03:50:09.891Z",
-    "userAgent": "server",
-    "referrer": null,
-    "id": "p6parjl9lfmp3iu7s7"
-  },
-  {
-    "articleId": "art-5",
-    "path": "/articles/top-10-tips-new-players",
-    "visitedAt": "2026-05-14T02:20:31.022Z",
-    "userAgent": "server",
-    "referrer": null,
-    "id": "u2lpooxvxrqmp4v2s35"
-  },
-  {
-    "articleId": "art-1",
-    "path": "/articles/ironclad-complete-guide",
-    "visitedAt": "2026-05-14T02:20:31.351Z",
-    "userAgent": "server",
-    "referrer": null,
-    "id": "v4nce7ydszbmp4v2sc9"
-  },
-  {
     "articleId": "art-6",
     "path": "/articles/card-synergy-combinations",
-    "visitedAt": "2026-05-14T02:20:51.081Z",
+    "visitedAt": "2026-05-14T02:30:09.601Z",
     "userAgent": "server",
     "referrer": null,
-    "id": "ckfp2mrjyvmp4v37kg"
+    "id": "f3mbu3tgc2mp4vf6iu"
   },
   {
-    "articleId": "art-4",
-    "path": "/articles/defect-power-cards",
-    "visitedAt": "2026-05-14T02:20:51.496Z",
+    "articleId": "art-3",
+    "path": "/articles/beat-the-collector",
+    "visitedAt": "2026-05-14T02:30:10.330Z",
     "userAgent": "server",
     "referrer": null,
-    "id": "f4rjolcdsdvmp4v37vy"
+    "id": "5boc2jsk7gump4vf731"
   }
 ]  }
 ]

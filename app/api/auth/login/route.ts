@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readData } from "@/lib/db";
-import type { User } from "@/lib/types";
+
+// Default admin user (same as lib/db.ts initializeDefaultData)
+const DEFAULT_USERS = [
+  { id: "user-1", email: "admin@example.com", password: "admin123", name: "Admin", role: "admin", createdAt: "2026-01-01T00:00:00Z" },
+];
 
 export async function POST(request: NextRequest) {
   try {
@@ -11,14 +14,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    const users = readData<User[]>("users.json");
-    const user = users.find((u) => u.email === email);
+    // Find user from default users (for Vercel deployment)
+    const user = DEFAULT_USERS.find((u) => u.email === email);
 
     if (!user || user.password !== password) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
     }
 
-    // Create a simple session token (in production, use proper JWT)
+    // Create session token
     const sessionToken = Buffer.from(`${user.id}:${Date.now()}`).toString("base64");
 
     const { password: _, ...safeUser } = user;
@@ -37,7 +40,7 @@ export async function POST(request: NextRequest) {
       path: "/",
     });
 
-    // Also set a user cookie for client-side access
+    // Set user cookie for client-side access
     response.cookies.set("user", JSON.stringify(safeUser), {
       httpOnly: false,
       secure: process.env.NODE_ENV === "production",
