@@ -1,3 +1,5 @@
+"use client";
+
 import { AdminSidebar } from "@/components/admin/admin-sidebar";
 import { LanguageProvider } from "@/components/language-provider";
 

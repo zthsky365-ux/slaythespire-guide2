@@ -6,20 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Shield, Sword, Loader2 } from "lucide-react";
-import { LanguageProvider, useLanguage } from "@/components/language-provider";
 
-function LoginForm() {
+export default function LoginPage() {
   const router = useRouter();
-  const { t } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
     // Check if already logged in
-    const session = document.cookie.includes("session=");
-    if (session) {
+    if (document.cookie.includes("session=")) {
       router.push("/admin");
     }
   }, [router]);
@@ -42,14 +41,23 @@ function LoginForm() {
         router.push("/admin");
         router.refresh();
       } else {
-        setError(data.error || t("auth.loginFailed"));
+        setError(data.error || "登录失败，请检查账号密码");
       }
     } catch {
-      setError(t("messages.networkError"));
+      setError("网络错误，请检查网络连接");
     }
 
     setLoading(false);
   };
+
+  // Prevent hydration mismatch
+  if (!mounted) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900">
+        <Loader2 className="w-8 h-8 animate-spin text-purple-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-slate-900 via-purple-950 to-slate-900 p-4">
@@ -65,10 +73,10 @@ function LoginForm() {
           </div>
           <div>
             <CardTitle className="text-2xl font-bold text-white font-serif">
-              {t("auth.loginTitle")}
+              用户登录
             </CardTitle>
             <CardDescription className="text-slate-400 mt-2">
-              {t("auth.loginDescription")}
+              请输入您的账号信息
             </CardDescription>
           </div>
         </CardHeader>
@@ -81,7 +89,7 @@ function LoginForm() {
             )}
             
             <div className="space-y-2">
-              <label className="text-sm text-slate-300">{t("auth.email")}</label>
+              <label className="text-sm text-slate-300">邮箱</label>
               <Input
                 type="email"
                 value={email}
@@ -93,7 +101,7 @@ function LoginForm() {
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm text-slate-300">{t("auth.password")}</label>
+              <label className="text-sm text-slate-300">密码</label>
               <Input
                 type="password"
                 value={password}
@@ -112,12 +120,12 @@ function LoginForm() {
               {loading ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  {t("common.loading")}
+                  加载中...
                 </>
               ) : (
                 <>
                   <Shield className="w-4 h-4 mr-2" />
-                  {t("auth.loginButton")}
+                  登录
                 </>
               )}
             </Button>
@@ -125,19 +133,11 @@ function LoginForm() {
 
           <div className="mt-6 pt-6 border-t border-slate-800">
             <p className="text-xs text-slate-500 text-center">
-              Default: admin@example.com / admin123
+              默认账户: admin@example.com / admin123
             </p>
           </div>
         </CardContent>
       </Card>
     </div>
-  );
-}
-
-export default function LoginPage() {
-  return (
-    <LanguageProvider>
-      <LoginForm />
-    </LanguageProvider>
   );
 }
