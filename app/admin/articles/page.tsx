@@ -1,119 +1,95 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { DataTable } from "@/components/admin/data-table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Plus, Pencil, Trash2, Eye, Star, Search } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/ui/select";
-import type { Article, Category } from "@/lib/types";
+
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string;
+  content: string;
+  category: string;
+  tags: string[];
+  author: string;
+  featured: boolean;
+  status: "published" | "draft";
+  views: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+}
 
 export default function ArticlesPage() {
+  const { t } = useLanguage();
   const [articles, setArticles] = useState<Article[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingArticle, setEditingArticle] = useState<Article | null>(null);
-  const [formData, setFormData] = useState({
-    title: "",
-    content: "",
-    excerpt: "",
-    categoryId: "",
-    tags: "",
-    status: "draft",
-    coverImage: "",
-  });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchData();
   }, []);
 
-  async function fetchData() {
+  const fetchData = async () => {
     try {
       const [articlesRes, categoriesRes] = await Promise.all([
-        fetch("/api/articles").then((res) => res.json()),
-        fetch("/api/categories").then((res) => res.json()),
+        fetch("/api/articles"),
+        fetch("/api/categories"),
       ]);
-      // Get all articles (including unpublished) from the full list
-      const allArticlesRes = await fetch("/api/admin/articles").then((res) => res.json()).catch(() => articlesRes);
-      setArticles(articlesRes);
-      setCategories(categoriesRes);
+      const articlesData = await articlesRes.json();
+      const categoriesData = await categoriesRes.json();
+      setArticles(articlesData);
+      setCategories(categoriesData);
     } catch (error) {
       console.error("Failed to fetch data:", error);
     }
     setLoading(false);
-  }
-
-  const handleEdit = (article: Article) => {
-    setEditingArticle(article);
-    setFormData({
-      title: article.title,
-      content: article.content,
-      excerpt: article.excerpt,
-      categoryId: article.categoryId,
-      tags: article.tags.join(", "),
-      status: article.status,
-      coverImage: article.coverImage || "",
-    });
-    setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this article?")) return;
-    
-    try {
-      await fetch(`/api/articles?id=${id}`, { method: "DELETE" });
-      fetchData();
-    } catch (error) {
-      console.error("Failed to delete article:", error);
-    }
-  };
+  const handleSave = async () => {
+    if (!editingArticle) return;
 
-  const handleToggleStatus = async (article: Article) => {
-    const newStatus = article.status === "published" ? "draft" : "published";
     try {
+      const method = articles.find((a) => a.id === editingArticle.id) ? "PUT" : "POST";
       await fetch("/api/articles", {
-        method: "PUT",
+        method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: article.id, status: newStatus }),
+        body: JSON.stringify(editingArticle),
       });
-      fetchData();
-    } catch (error) {
-      console.error("Failed to update status:", error);
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const data = {
-      ...formData,
-      tags: formData.tags.split(",").map((t) => t.trim()).filter(Boolean),
-    };
-
-    try {
-      if (editingArticle) {
-        await fetch("/api/articles", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingArticle.id, ...data }),
-        });
-      } else {
-        await fetch("/api/articles", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        });
-      }
       setIsDialogOpen(false);
       setEditingArticle(null);
       fetchData();
@@ -122,47 +98,58 @@ export default function ArticlesPage() {
     }
   };
 
-  const filteredArticles = articles.filter(
-    (article) =>
-      article.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      article.excerpt.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("article.deleteConfirm"))) return;
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><p>Loading...</p></div>;
-  }
+    try {
+      await fetch(`/api/articles?id=${id}`, { method: "DELETE" });
+      fetchData();
+    } catch (error) {
+      console.error("Failed to delete article:", error);
+    }
+  };
+
+  const filteredArticles = articles.filter((article) =>
+    article.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-foreground">Articles</h1>
-          <p className="text-muted-foreground mt-1">Manage your content</p>
+          <h1 className="text-3xl font-bold text-white font-serif">{t("article.articleList")}</h1>
+          <p className="text-muted-foreground mt-1">{t("article.articleList")}</p>
         </div>
-        <Button onClick={() => {
-          setEditingArticle(null);
-          setFormData({
-            title: "",
-            content: "",
-            excerpt: "",
-            categoryId: categories[0]?.id || "",
-            tags: "",
-            status: "draft",
-            coverImage: "",
-          });
-          setIsDialogOpen(true);
-        }}>
+        <Button
+          onClick={() => {
+            setEditingArticle({
+              id: "",
+              title: "",
+              slug: "",
+              excerpt: "",
+              content: "",
+              category: "",
+              tags: [],
+              author: "Admin",
+              featured: false,
+              status: "draft",
+              views: 0,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+            setIsDialogOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
-          New Article
+          {t("article.createArticle")}
         </Button>
       </div>
 
       {/* Search */}
-      <div className="relative max-w-md">
+      <div className="relative">
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
         <Input
-          placeholder="Search articles..."
+          placeholder={t("search.placeholder")}
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           className="pl-10"
@@ -170,95 +157,186 @@ export default function ArticlesPage() {
       </div>
 
       {/* Table */}
-      <DataTable
-        data={filteredArticles}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-        onToggleStatus={handleToggleStatus}
-      />
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("article.title")}</TableHead>
+                <TableHead>{t("article.category")}</TableHead>
+                <TableHead>{t("article.status")}</TableHead>
+                <TableHead>{t("article.views")}</TableHead>
+                <TableHead>{t("article.actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    {t("common.loading")}
+                  </TableCell>
+                </TableRow>
+              ) : filteredArticles.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">
+                    {t("home.noArticles")}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                filteredArticles.map((article) => (
+                  <TableRow key={article.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        {article.featured && <Star className="h-4 w-4 text-amber-500" />}
+                        {article.title}
+                      </div>
+                    </TableCell>
+                    <TableCell>{article.category}</TableCell>
+                    <TableCell>
+                      <span
+                        className={`px-2 py-1 rounded text-xs ${
+                          article.status === "published"
+                            ? "bg-green-500/20 text-green-400"
+                            : "bg-yellow-500/20 text-yellow-400"
+                        }`}
+                      >
+                        {article.status === "published" ? t("article.published") : t("article.draft")}
+                      </span>
+                    </TableCell>
+                    <TableCell>{article.views}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => window.open(`/articles/${article.slug}`, "_blank")}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditingArticle(article);
+                            setIsDialogOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDelete(article.id)}
+                          className="hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-      {/* Edit/Create Dialog */}
+      {/* Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
-            <DialogTitle>{editingArticle ? "Edit Article" : "Create New Article"}</DialogTitle>
+            <DialogTitle>
+              {editingArticle?.id ? t("article.editArticle") : t("article.createArticle")}
+            </DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Title</label>
-              <Input
-                value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                placeholder="Article title"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Content (Markdown)</label>
-              <Textarea
-                value={formData.content}
-                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                placeholder="Write your article content in Markdown..."
-                className="min-h-[300px] font-mono text-sm"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Excerpt</label>
-              <Textarea
-                value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                placeholder="Brief description of the article"
-                className="min-h-[80px]"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
+          {editingArticle && (
+            <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Category</label>
-                <Select
-                  value={formData.categoryId}
-                  onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
-                  options={categories.map((c) => ({ value: c.id, label: c.name }))}
+                <label className="text-sm text-muted-foreground mb-2 block">{t("article.title")}</label>
+                <Input
+                  value={editingArticle.title}
+                  onChange={(e) => {
+                    setEditingArticle({
+                      ...editingArticle,
+                      title: e.target.value,
+                      slug: e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                    });
+                  }}
+                  placeholder={t("article.articleTitle")}
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium mb-2">Status</label>
-                <Select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  options={[
-                    { value: "draft", label: "Draft" },
-                    { value: "published", label: "Published" },
-                    { value: "archived", label: "Archived" },
-                  ]}
+                <label className="text-sm text-muted-foreground mb-2 block">{t("article.articleExcerpt")}</label>
+                <Input
+                  value={editingArticle.excerpt}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, excerpt: e.target.value })}
+                  placeholder={t("article.articleExcerpt")}
                 />
               </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("article.content")}</label>
+                <Textarea
+                  value={editingArticle.content}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, content: e.target.value })}
+                  placeholder={t("article.articleContent")}
+                  className="min-h-[200px]"
+                />
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">{t("article.category")}</label>
+                  <Select
+                    value={editingArticle.category}
+                    onValueChange={(value) => setEditingArticle({ ...editingArticle, category: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder={t("article.selectCategory")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {categories.map((cat) => (
+                        <SelectItem key={cat.id} value={cat.name}>
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <label className="text-sm text-muted-foreground mb-2 block">{t("article.status")}</label>
+                  <Select
+                    value={editingArticle.status}
+                    onValueChange={(value) =>
+                      setEditingArticle({ ...editingArticle, status: value as "published" | "draft" })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="published">{t("article.published")}</SelectItem>
+                      <SelectItem value="draft">{t("article.draft")}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    checked={editingArticle.featured}
+                    onChange={(e) => setEditingArticle({ ...editingArticle, featured: e.target.checked })}
+                  />
+                  {t("article.featured")}
+                </label>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                  {t("common.cancel")}
+                </Button>
+                <Button onClick={handleSave}>{t("common.save")}</Button>
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Tags (comma-separated)</label>
-              <Input
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                placeholder="e.g., Ironclad, Builds, Beginner"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Cover Image URL</label>
-              <Input
-                value={formData.coverImage}
-                onChange={(e) => setFormData({ ...formData, coverImage: e.target.value })}
-                placeholder="https://..."
-              />
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingArticle ? "Update" : "Create"}
-              </Button>
-            </DialogFooter>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

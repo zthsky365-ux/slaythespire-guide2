@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Save, User, Shield, Bell, Globe } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Save, User, Shield, Globe, Loader2 } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 
 interface UserProfile {
   id: string;
@@ -14,6 +15,7 @@ interface UserProfile {
 }
 
 export default function SettingsPage() {
+  const { t } = useLanguage();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
@@ -25,11 +27,19 @@ export default function SettingsPage() {
   const [message, setMessage] = useState({ type: "", text: "" });
 
   useEffect(() => {
-    // Fetch current user profile
     fetch("/api/auth/profile")
       .then((res) => res.json())
       .then((data) => {
         if (data.email) setProfile(data);
+      })
+      .catch(() => {});
+    
+    fetch("/api/settings")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.siteName) setSiteName(data.siteName);
+        if (data.siteDescription) setSiteDescription(data.siteDescription);
+        if (data.notificationEmail) setNotificationEmail(data.notificationEmail);
       })
       .catch(() => {});
   }, []);
@@ -38,12 +48,12 @@ export default function SettingsPage() {
     e.preventDefault();
     
     if (newPassword !== confirmPassword) {
-      setMessage({ type: "error", text: "New passwords do not match" });
+      setMessage({ type: "error", text: t("auth.passwordMismatch") });
       return;
     }
 
     if (newPassword.length < 6) {
-      setMessage({ type: "error", text: "Password must be at least 6 characters" });
+      setMessage({ type: "error", text: t("auth.passwordTooShort") });
       return;
     }
 
@@ -56,15 +66,16 @@ export default function SettingsPage() {
       });
 
       if (res.ok) {
-        setMessage({ type: "success", text: "Password changed successfully!" });
+        setMessage({ type: "success", text: t("auth.passwordChanged") });
         setCurrentPassword("");
         setNewPassword("");
         setConfirmPassword("");
       } else {
-        setMessage({ type: "error", text: "Current password is incorrect" });
+        const data = await res.json();
+        setMessage({ type: "error", text: data.error || t("auth.currentPasswordIncorrect") });
       }
     } catch {
-      setMessage({ type: "error", text: "Failed to change password" });
+      setMessage({ type: "error", text: t("messages.networkError") });
     }
     setSaving(false);
   };
@@ -72,14 +83,19 @@ export default function SettingsPage() {
   const handleSaveSettings = async () => {
     setSaving(true);
     try {
-      await fetch("/api/settings", {
+      const res = await fetch("/api/settings", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ siteName, siteDescription, notificationEmail }),
       });
-      setMessage({ type: "success", text: "Settings saved successfully!" });
+      
+      if (res.ok) {
+        setMessage({ type: "success", text: t("settings.settingsSaved") });
+      } else {
+        setMessage({ type: "error", text: t("messages.operationFailed") });
+      }
     } catch {
-      setMessage({ type: "error", text: "Failed to save settings" });
+      setMessage({ type: "error", text: t("messages.networkError") });
     }
     setSaving(false);
   };
@@ -87,16 +103,12 @@ export default function SettingsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-white font-serif">Settings</h1>
-        <p className="text-muted-foreground mt-1">Manage your account and site settings</p>
+        <h1 className="text-3xl font-bold text-white font-serif">{t("settings.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("settings.title")}</p>
       </div>
 
       {message.text && (
-        <div
-          className={`p-4 rounded-lg ${
-            message.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"
-          }`}
-        >
+        <div className={`p-4 rounded-lg ${message.type === "success" ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}>
           {message.text}
         </div>
       )}
@@ -106,23 +118,23 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <User className="h-5 w-5" />
-            Profile
+            {t("settings.profile")}
           </CardTitle>
-          <CardDescription>Your account information</CardDescription>
+          <CardDescription>{t("settings.profileDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Name</label>
+              <label className="text-sm text-muted-foreground mb-2 block">{t("user.username")}</label>
               <Input value={profile?.name || ""} disabled />
             </div>
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Email</label>
+              <label className="text-sm text-muted-foreground mb-2 block">{t("user.email")}</label>
               <Input value={profile?.email || ""} disabled />
             </div>
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-2 block">Role</label>
+            <label className="text-sm text-muted-foreground mb-2 block">{t("user.role")}</label>
             <Input value={profile?.role || ""} disabled className="capitalize" />
           </div>
         </CardContent>
@@ -133,47 +145,47 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Shield className="h-5 w-5" />
-            Change Password
+            {t("settings.changePassword")}
           </CardTitle>
-          <CardDescription>Update your password to keep your account secure</CardDescription>
+          <CardDescription>{t("settings.changePasswordDescription")}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handlePasswordChange} className="space-y-4">
             <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Current Password</label>
+              <label className="text-sm text-muted-foreground mb-2 block">{t("auth.currentPassword")}</label>
               <Input
                 type="password"
                 value={currentPassword}
                 onChange={(e) => setCurrentPassword(e.target.value)}
-                placeholder="Enter current password"
+                placeholder={t("auth.currentPassword")}
                 required
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="text-sm text-muted-foreground mb-2 block">New Password</label>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("auth.newPassword")}</label>
                 <Input
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Enter new password"
+                  placeholder={t("auth.newPassword")}
                   required
                 />
               </div>
               <div>
-                <label className="text-sm text-muted-foreground mb-2 block">Confirm New Password</label>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("auth.confirmPassword")}</label>
                 <Input
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirm new password"
+                  placeholder={t("auth.confirmPassword")}
                   required
                 />
               </div>
             </div>
             <Button type="submit" disabled={saving}>
-              <Shield className="h-4 w-4 mr-2" />
-              Change Password
+              {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Shield className="h-4 w-4 mr-2" />}
+              {t("auth.changePassword")}
             </Button>
           </form>
         </CardContent>
@@ -184,39 +196,26 @@ export default function SettingsPage() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Globe className="h-5 w-5" />
-            Site Settings
+            {t("settings.siteSettings")}
           </CardTitle>
-          <CardDescription>Configure your website settings</CardDescription>
+          <CardDescription>{t("settings.siteSettingsDescription")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
-            <label className="text-sm text-muted-foreground mb-2 block">Site Name</label>
-            <Input
-              value={siteName}
-              onChange={(e) => setSiteName(e.target.value)}
-              placeholder="Enter site name"
-            />
+            <label className="text-sm text-muted-foreground mb-2 block">{t("settings.siteName")}</label>
+            <Input value={siteName} onChange={(e) => setSiteName(e.target.value)} placeholder={t("settings.siteName")} />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-2 block">Site Description</label>
-            <Input
-              value={siteDescription}
-              onChange={(e) => setSiteDescription(e.target.value)}
-              placeholder="Enter site description"
-            />
+            <label className="text-sm text-muted-foreground mb-2 block">{t("settings.siteDescription")}</label>
+            <Input value={siteDescription} onChange={(e) => setSiteDescription(e.target.value)} placeholder={t("settings.siteDescription")} />
           </div>
           <div>
-            <label className="text-sm text-muted-foreground mb-2 block">Notification Email</label>
-            <Input
-              type="email"
-              value={notificationEmail}
-              onChange={(e) => setNotificationEmail(e.target.value)}
-              placeholder="email@example.com"
-            />
+            <label className="text-sm text-muted-foreground mb-2 block">{t("settings.notificationEmail")}</label>
+            <Input type="email" value={notificationEmail} onChange={(e) => setNotificationEmail(e.target.value)} placeholder="email@example.com" />
           </div>
           <Button onClick={handleSaveSettings} disabled={saving}>
-            <Save className="h-4 w-4 mr-2" />
-            Save Settings
+            {saving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
+            {t("settings.saveSettings")}
           </Button>
         </CardContent>
       </Card>

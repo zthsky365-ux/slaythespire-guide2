@@ -1,14 +1,27 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Plus, Pencil, Trash2, Tag } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 
-interface Tag {
+interface TagData {
   id: string;
   name: string;
   slug: string;
@@ -16,16 +29,31 @@ interface Tag {
   articleCount: number;
 }
 
-const PRESET_COLORS = [
-  "#8b5cf6", "#06b6d4", "#10b981", "#f59e0b", "#ef4444", "#ec4899", "#6366f1", "#14b8a6"
+const tagColors = [
+  "bg-red-500",
+  "bg-orange-500",
+  "bg-amber-500",
+  "bg-yellow-500",
+  "bg-lime-500",
+  "bg-green-500",
+  "bg-emerald-500",
+  "bg-teal-500",
+  "bg-cyan-500",
+  "bg-sky-500",
+  "bg-blue-500",
+  "bg-indigo-500",
+  "bg-violet-500",
+  "bg-purple-500",
+  "bg-fuchsia-500",
+  "bg-pink-500",
 ];
 
 export default function TagsPage() {
-  const [tags, setTags] = useState<Tag[]>([]);
+  const { t } = useLanguage();
+  const [tags, setTags] = useState<TagData[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTag, setEditingTag] = useState<Tag | null>(null);
-  const [formData, setFormData] = useState({ name: "", color: "#8b5cf6" });
+  const [editingTag, setEditingTag] = useState<TagData | null>(null);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchTags();
@@ -38,41 +66,31 @@ export default function TagsPage() {
       setTags(data);
     } catch (error) {
       console.error("Failed to fetch tags:", error);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const method = editingTag ? "PUT" : "POST";
-    const url = editingTag ? `/api/tags?id=${editingTag.id}` : "/api/tags";
+  const handleSave = async () => {
+    if (!editingTag) return;
 
     try {
-      await fetch(url, {
+      const method = tags.find((tag) => tag.id === editingTag.id) ? "PUT" : "POST";
+      await fetch("/api/tags", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(editingTag),
       });
-      setIsModalOpen(false);
+      setIsDialogOpen(false);
       setEditingTag(null);
-      setFormData({ name: "", color: "#8b5cf6" });
       fetchTags();
     } catch (error) {
       console.error("Failed to save tag:", error);
     }
   };
 
-  const handleEdit = (tag: Tag) => {
-    setEditingTag(tag);
-    setFormData({ name: tag.name, color: tag.color });
-    setIsModalOpen(true);
-  };
-
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this tag?")) return;
-    
+    if (!confirm(t("tag.deleteConfirm"))) return;
+
     try {
       await fetch(`/api/tags?id=${id}`, { method: "DELETE" });
       fetchTags();
@@ -85,96 +103,112 @@ export default function TagsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-white font-serif">Tags</h1>
-          <p className="text-muted-foreground mt-1">Manage article tags</p>
+          <h1 className="text-3xl font-bold text-white font-serif">{t("tag.tagList")}</h1>
+          <p className="text-muted-foreground mt-1">{t("tag.tagList")}</p>
         </div>
-        <Button onClick={() => { setIsModalOpen(true); setEditingTag(null); setFormData({ name: "", color: "#8b5cf6" }); }}>
+        <Button
+          onClick={() => {
+            setEditingTag({
+              id: "",
+              name: "",
+              slug: "",
+              color: "bg-purple-500",
+              articleCount: 0,
+            });
+            setIsDialogOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
-          Add Tag
+          {t("tag.createTag")}
         </Button>
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>All Tags ({tags.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <div className="text-center py-8 text-muted-foreground">Loading...</div>
-          ) : tags.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">No tags yet</div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {tags.map((tag) => (
-                <div
-                  key={tag.id}
-                  className="flex items-center justify-between p-4 rounded-lg bg-secondary/50 border border-border"
-                >
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: tag.color }}
-                    />
-                    <div>
-                      <p className="font-medium text-white">{tag.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {tag.articleCount} articles
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="ghost" size="sm" onClick={() => handleEdit(tag)}>
-                      <Pencil className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" onClick={() => handleDelete(tag.id)}>
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("tag.name")}</TableHead>
+                <TableHead>{t("tag.slug")}</TableHead>
+                <TableHead>{t("tag.color")}</TableHead>
+                <TableHead>{t("tag.count")}</TableHead>
+                <TableHead>{t("article.actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">{t("common.loading")}</TableCell>
+                </TableRow>
+              ) : tags.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">{t("home.noArticles")}</TableCell>
+                </TableRow>
+              ) : (
+                tags.map((tag) => (
+                  <TableRow key={tag.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <Tag className="h-4 w-4" />
+                        {tag.name}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">/{tag.slug}</TableCell>
+                    <TableCell>
+                      <div className={`inline-block w-6 h-6 rounded ${tag.color}`} />
+                    </TableCell>
+                    <TableCell>{tag.articleCount}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingTag(tag); setIsDialogOpen(true); }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(tag.id)} className="hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
-      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingTag ? "Edit Tag" : "Add New Tag"}</DialogTitle>
+            <DialogTitle>{editingTag?.id ? t("tag.editTag") : t("tag.createTag")}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Tag Name</label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Enter tag name"
-                required
-              />
-            </div>
-            <div>
-              <label className="text-sm text-muted-foreground mb-2 block">Color</label>
-              <div className="flex flex-wrap gap-2">
-                {PRESET_COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, color })}
-                    className={`w-8 h-8 rounded-full border-2 ${
-                      formData.color === color ? "border-white" : "border-transparent"
-                    }`}
-                    style={{ backgroundColor: color }}
-                  />
-                ))}
+          {editingTag && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("tag.name")}</label>
+                <Input
+                  value={editingTag.name}
+                  onChange={(e) => setEditingTag({ ...editingTag, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })}
+                />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("tag.color")}</label>
+                <div className="flex flex-wrap gap-2">
+                  {tagColors.map((color) => (
+                    <button
+                      key={color}
+                      type="button"
+                      className={`w-8 h-8 rounded ${color} ${editingTag.color === color ? "ring-2 ring-white ring-offset-2" : ""}`}
+                      onClick={() => setEditingTag({ ...editingTag, color })}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("common.cancel")}</Button>
+                <Button onClick={handleSave}>{t("common.save")}</Button>
               </div>
             </div>
-            <div className="flex justify-end gap-2 pt-4">
-              <Button type="button" variant="outline" onClick={() => setIsModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">{editingTag ? "Update" : "Create"}</Button>
-            </div>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

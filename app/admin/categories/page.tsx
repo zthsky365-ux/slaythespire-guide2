@@ -1,56 +1,47 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Plus, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import type { Category } from "@/lib/types";
+import { Plus, Pencil, Trash2, FolderTree } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 
-const ICONS = [
-  { value: "layers", label: "Layers" },
-  { value: "user", label: "User" },
-  { value: "shield", label: "Shield" },
-  { value: "zap", label: "Zap" },
-  { value: "lightbulb", label: "Lightbulb" },
-];
-
-const COLORS = [
-  "#8B5CF6", // Purple
-  "#F59E0B", // Amber
-  "#EF4444", // Red
-  "#10B981", // Green
-  "#3B82F6", // Blue
-  "#EC4899", // Pink
-  "#6366F1", // Indigo
-  "#14B8A6", // Teal
-];
+interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string;
+  icon: string;
+  articleCount: number;
+}
 
 export default function CategoriesPage() {
+  const { t } = useLanguage();
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    icon: "layers",
-    color: "#8B5CF6",
-  });
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     fetchCategories();
   }, []);
 
-  async function fetchCategories() {
+  const fetchCategories = async () => {
     try {
       const res = await fetch("/api/categories");
       const data = await res.json();
@@ -59,47 +50,18 @@ export default function CategoriesPage() {
       console.error("Failed to fetch categories:", error);
     }
     setLoading(false);
-  }
-
-  const handleEdit = (category: Category) => {
-    setEditingCategory(category);
-    setFormData({
-      name: category.name,
-      description: category.description,
-      icon: category.icon,
-      color: category.color,
-    });
-    setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this category?")) return;
-    
-    try {
-      await fetch(`/api/categories?id=${id}`, { method: "DELETE" });
-      fetchCategories();
-    } catch (error) {
-      console.error("Failed to delete category:", error);
-    }
-  };
+  const handleSave = async () => {
+    if (!editingCategory) return;
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
     try {
-      if (editingCategory) {
-        await fetch("/api/categories", {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: editingCategory.id, ...formData }),
-        });
-      } else {
-        await fetch("/api/categories", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        });
-      }
+      const method = categories.find((c) => c.id === editingCategory.id) ? "PUT" : "POST";
+      await fetch("/api/categories", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(editingCategory),
+      });
       setIsDialogOpen(false);
       setEditingCategory(null);
       fetchCategories();
@@ -108,145 +70,114 @@ export default function CategoriesPage() {
     }
   };
 
-  if (loading) {
-    return <div className="flex items-center justify-center h-64"><p>Loading...</p></div>;
-  }
+  const handleDelete = async (id: string) => {
+    if (!confirm(t("category.deleteConfirm"))) return;
+
+    try {
+      await fetch(`/api/categories?id=${id}`, { method: "DELETE" });
+      fetchCategories();
+    } catch (error) {
+      console.error("Failed to delete category:", error);
+    }
+  };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="font-serif text-3xl font-bold text-foreground">Categories</h1>
-          <p className="text-muted-foreground mt-1">Organize your content</p>
+          <h1 className="text-3xl font-bold text-white font-serif">{t("category.categoryList")}</h1>
+          <p className="text-muted-foreground mt-1">{t("category.categoryList")}</p>
         </div>
-        <Button onClick={() => {
-          setEditingCategory(null);
-          setFormData({
-            name: "",
-            description: "",
-            icon: "layers",
-            color: "#8B5CF6",
-          });
-          setIsDialogOpen(true);
-        }}>
+        <Button
+          onClick={() => {
+            setEditingCategory({
+              id: "",
+              name: "",
+              slug: "",
+              description: "",
+              icon: "folder",
+              articleCount: 0,
+            });
+            setIsDialogOpen(true);
+          }}
+        >
           <Plus className="h-4 w-4 mr-2" />
-          New Category
+          {t("category.createCategory")}
         </Button>
       </div>
 
-      {/* Categories Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {categories.map((category) => (
-          <div
-            key={category.id}
-            className="p-6 bg-card rounded-xl border border-border"
-          >
-            <div className="flex items-start justify-between mb-4">
-              <div 
-                className="p-3 rounded-lg"
-                style={{ backgroundColor: `${category.color}20` }}
-              >
-                <span style={{ color: category.color }} className="text-xl font-bold">
-                  {category.name.charAt(0)}
-                </span>
-              </div>
-              <Badge 
-                variant="outline"
-                style={{ borderColor: category.color, color: category.color }}
-              >
-                {category.name}
-              </Badge>
-            </div>
-            
-            <p className="text-sm text-muted-foreground mb-4 line-clamp-2">
-              {category.description || "No description"}
-            </p>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>{t("category.name")}</TableHead>
+                <TableHead>{t("category.slug")}</TableHead>
+                <TableHead>{t("category.description")}</TableHead>
+                <TableHead>{t("category.count")}</TableHead>
+                <TableHead>{t("article.actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">{t("common.loading")}</TableCell>
+                </TableRow>
+              ) : categories.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8">{t("home.noArticles")}</TableCell>
+                </TableRow>
+              ) : (
+                categories.map((category) => (
+                  <TableRow key={category.id}>
+                    <TableCell className="font-medium">
+                      <div className="flex items-center gap-2">
+                        <FolderTree className="h-4 w-4 text-primary" />
+                        {category.name}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">/{category.slug}</TableCell>
+                    <TableCell>{category.description}</TableCell>
+                    <TableCell>{category.articleCount}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" onClick={() => { setEditingCategory(category); setIsDialogOpen(true); }}>
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => handleDelete(category.id)} className="hover:text-destructive">
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
 
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={() => handleEdit(category)}>
-                <Pencil className="h-4 w-4 mr-1" />
-                Edit
-              </Button>
-              <Button variant="ghost" size="icon" onClick={() => handleDelete(category.id)}>
-                <Trash2 className="h-4 w-4 text-destructive" />
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Create/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingCategory ? "Edit Category" : "Create New Category"}</DialogTitle>
+            <DialogTitle>{editingCategory?.id ? t("category.editCategory") : t("category.createCategory")}</DialogTitle>
           </DialogHeader>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium mb-2">Name</label>
-              <Input
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                placeholder="Category name"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Description</label>
-              <Textarea
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                placeholder="Brief description"
-                className="min-h-[80px]"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Icon</label>
-              <div className="flex flex-wrap gap-2">
-                {ICONS.map((icon) => (
-                  <button
-                    key={icon.value}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, icon: icon.value })}
-                    className={`p-3 rounded-lg border transition-all ${
-                      formData.icon === icon.value
-                        ? "border-primary bg-primary/20"
-                        : "border-border hover:border-primary/50"
-                    }`}
-                  >
-                    <span className="text-sm">{icon.label}</span>
-                  </button>
-                ))}
+          {editingCategory && (
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("category.name")}</label>
+                <Input value={editingCategory.name} onChange={(e) => setEditingCategory({ ...editingCategory, name: e.target.value, slug: e.target.value.toLowerCase().replace(/\s+/g, "-") })} />
+              </div>
+              <div>
+                <label className="text-sm text-muted-foreground mb-2 block">{t("category.description")}</label>
+                <Input value={editingCategory.description} onChange={(e) => setEditingCategory({ ...editingCategory, description: e.target.value })} />
+              </div>
+              <div className="flex justify-end gap-2">
+                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>{t("common.cancel")}</Button>
+                <Button onClick={handleSave}>{t("common.save")}</Button>
               </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium mb-2">Color</label>
-              <div className="flex flex-wrap gap-2">
-                {COLORS.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setFormData({ ...formData, color })}
-                    className={`w-10 h-10 rounded-lg transition-all ${
-                      formData.color === color ? "ring-2 ring-offset-2 ring-offset-background" : ""
-                    }`}
-                    style={{ 
-                      backgroundColor: color,
-                    }}
-                  />
-                ))}
-              </div>
-            </div>
-            <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancel
-              </Button>
-              <Button type="submit">
-                {editingCategory ? "Update" : "Create"}
-              </Button>
-            </DialogFooter>
-          </form>
+          )}
         </DialogContent>
       </Dialog>
     </div>

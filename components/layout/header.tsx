@@ -1,19 +1,44 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Search, Menu, X, Sword } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Menu, X, Sword, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { LanguageSwitcher } from "@/components/language-switcher";
+import { useLanguage } from "@/components/language-provider";
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const { t } = useLanguage();
+
+  useEffect(() => {
+    const checkLogin = () => {
+      const cookies = document.cookie.split(";");
+      const sessionCookie = cookies.find(c => c.trim().startsWith("session="));
+      setIsLoggedIn(!!sessionCookie);
+    };
+    checkLogin();
+    const interval = setInterval(checkLogin, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setIsLoggedIn(false);
+      window.location.href = "/login";
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   const navItems = [
-    { href: "/", label: "Home" },
+    { href: "/", label: t("nav.home") },
     { href: "/category/card-guides", label: "Card Guides" },
-    { href: "/category/character-builds", label: "Characters" },
+    { href: "/category/character-builds", label: t("nav.categories") },
     { href: "/category/boss-strategies", label: "Bosses" },
     { href: "/category/tips", label: "Tips" },
   ];
@@ -22,7 +47,6 @@ export function Header() {
     <header className="sticky top-0 z-50 w-full border-b border-border bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="p-2 bg-primary/20 rounded-lg group-hover:bg-primary/30 transition-colors">
               <Sword className="h-6 w-6 text-primary" />
@@ -33,7 +57,6 @@ export function Header() {
             </div>
           </Link>
 
-          {/* Desktop Navigation */}
           <nav className="hidden md:flex items-center gap-6">
             {navItems.map((item) => (
               <Link
@@ -46,14 +69,35 @@ export function Header() {
             ))}
           </nav>
 
-          {/* Actions */}
           <div className="flex items-center gap-2">
-            {/* Search */}
+            <LanguageSwitcher />
+
+            {isLoggedIn ? (
+              <div className="flex items-center gap-2">
+                <Link href="/admin">
+                  <Button variant="ghost" size="sm">
+                    <User className="h-4 w-4 mr-2" />
+                    {t("nav.admin")}
+                  </Button>
+                </Link>
+                <Button variant="ghost" size="sm" onClick={handleLogout}>
+                  <LogOut className="h-4 w-4" />
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button variant="primary" size="sm">
+                  <LogIn className="h-4 w-4 mr-2" />
+                  {t("common.login")}
+                </Button>
+              </Link>
+            )}
+
             <div className="hidden md:block relative">
               {isSearchOpen ? (
                 <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 animate-fade-in">
                   <Input
-                    placeholder="Search articles..."
+                    placeholder={t("search.placeholder")}
                     className="pr-10"
                     autoFocus
                     onBlur={() => setIsSearchOpen(false)}
@@ -78,7 +122,6 @@ export function Header() {
               )}
             </div>
 
-            {/* Mobile Menu Toggle */}
             <Button
               variant="ghost"
               size="icon"
@@ -90,7 +133,6 @@ export function Header() {
           </div>
         </div>
 
-        {/* Mobile Navigation */}
         {isMenuOpen && (
           <nav className="md:hidden py-4 border-t border-border animate-fade-in">
             <div className="flex flex-col gap-2">
@@ -106,7 +148,7 @@ export function Header() {
               ))}
               <div className="px-4 pt-2">
                 <Input
-                  placeholder="Search articles..."
+                  placeholder={t("search.placeholder")}
                   className="w-full"
                 />
               </div>

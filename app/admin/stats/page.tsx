@@ -1,213 +1,172 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Eye, FileText, Clock, TrendingUp, Users, Globe } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { BarChart3, Eye, FileText, TrendingUp, ArrowUp, ArrowDown } from "lucide-react";
+import { useLanguage } from "@/components/language-provider";
 
 interface Stats {
-  totalViews: number;
   totalArticles: number;
   totalCategories: number;
-  popularArticles: { id: string; title: string; views: number }[];
-  recentViews: { date: string; views: number }[];
+  totalTags: number;
+  totalViews: number;
+  todayViews: number;
+  yesterdayViews: number;
+  popularArticles: Array<{ title: string; views: number }>;
+  viewHistory: Array<{ date: string; views: number }>;
 }
 
 export default function StatsPage() {
+  const { t } = useLanguage();
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStats();
+    fetch("/api/stats")
+      .then((res) => res.json())
+      .then((data) => {
+        setStats(data);
+        setLoading(false);
+      })
+      .catch(() => setLoading(false));
   }, []);
 
-  async function fetchStats() {
-    try {
-      const res = await fetch("/api/stats");
-      const data = await res.json();
-      setStats(data);
-    } catch (error) {
-      console.error("Failed to fetch stats:", error);
-    }
-    setLoading(false);
-  }
+  const viewChange = stats ? stats.todayViews - stats.yesterdayViews : 0;
+  const viewChangePercent = stats && stats.yesterdayViews > 0 
+    ? ((viewChange / stats.yesterdayViews) * 100).toFixed(1) 
+    : 0;
 
   if (loading) {
-    return <div className="flex items-center justify-center h-64"><p>Loading...</p></div>;
+    return (
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold text-white font-serif">{t("stats.title")}</h1>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="animate-pulse">
+              <CardHeader className="pb-2">
+                <div className="h-4 bg-muted rounded w-1/2" />
+              </CardHeader>
+              <CardContent>
+                <div className="h-8 bg-muted rounded w-3/4" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+    );
   }
-
-  if (!stats) {
-    return <div className="flex items-center justify-center h-64"><p>Failed to load stats</p></div>;
-  }
-
-  const maxViews = Math.max(...stats.recentViews.map((d) => d.views), 1);
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div>
-        <h1 className="font-serif text-3xl font-bold text-foreground">Statistics</h1>
-        <p className="text-muted-foreground mt-1">Track your website performance</p>
+        <h1 className="text-3xl font-bold text-white font-serif">{t("stats.title")}</h1>
+        <p className="text-muted-foreground mt-1">{t("stats.title")}</p>
       </div>
 
       {/* Stats Overview */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Page Views</p>
-                <h3 className="text-3xl font-bold mt-1">{stats.totalViews.toLocaleString()}</h3>
-              </div>
-              <div className="p-3 bg-primary/20 rounded-lg">
-                <Eye className="h-6 w-6 text-primary" />
-              </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("stats.todayViews")}
+            </CardTitle>
+            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.todayViews || 0}</div>
+            <div className={`flex items-center text-xs ${viewChange >= 0 ? "text-green-400" : "text-red-400"}`}>
+              {viewChange >= 0 ? <ArrowUp className="h-3 w-3 mr-1" /> : <ArrowDown className="h-3 w-3 mr-1" />}
+              {Math.abs(Number(viewChangePercent))}% {t("stats.viewTrends")}
             </div>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Total Articles</p>
-                <h3 className="text-3xl font-bold mt-1">{stats.totalArticles}</h3>
-              </div>
-              <div className="p-3 bg-accent/20 rounded-lg">
-                <FileText className="h-6 w-6 text-accent" />
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("stats.totalViews")}
+            </CardTitle>
+            <Eye className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalViews.toLocaleString() || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">{t("stats.totalViews")}</p>
           </CardContent>
         </Card>
 
         <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Avg. Daily Views</p>
-                <h3 className="text-3xl font-bold mt-1">
-                  {Math.round(stats.totalViews / 7).toLocaleString()}
-                </h3>
-              </div>
-              <div className="p-3 bg-success/20 rounded-lg">
-                <Clock className="h-6 w-6 text-success" />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm text-muted-foreground">Categories</p>
-                <h3 className="text-3xl font-bold mt-1">{stats.totalCategories}</h3>
-              </div>
-              <div className="p-3 bg-secondary rounded-lg">
-                <TrendingUp className="h-6 w-6 text-muted-foreground" />
-              </div>
-            </div>
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
+              {t("stats.totalArticles")}
+            </CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{stats?.totalArticles || 0}</div>
+            <p className="text-xs text-muted-foreground mt-1">{t("stats.totalArticles")}</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Views Chart */}
+      {/* Additional Stats */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5 text-primary" />
-              Daily Page Views (Last 7 Days)
+              <BarChart3 className="h-5 w-5" />
+              {t("stats.totalCategories")}
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="h-64 flex items-end gap-3">
-              {stats.recentViews.map((day, index) => (
-                <div key={day.date} className="flex-1 flex flex-col items-center gap-2">
-                  <div className="w-full flex flex-col items-center justify-end" style={{ height: "200px" }}>
-                    <div 
-                      className="w-full bg-gradient-to-t from-primary/50 to-primary rounded-t transition-all hover:from-primary/70 hover:to-primary cursor-pointer"
-                      style={{ height: `${(day.views / maxViews) * 100}%`, minHeight: day.views > 0 ? "8px" : "0" }}
-                      title={`${day.views} views`}
-                    />
+            <div className="text-4xl font-bold text-primary">{stats?.totalCategories || 0}</div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5" />
+              {t("stats.totalTags")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-4xl font-bold text-primary">{stats?.totalTags || 0}</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Popular Articles */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            {t("stats.popularArticles")}
+          </CardTitle>
+          <CardDescription>{t("stats.popularArticles")}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {stats?.popularArticles && stats.popularArticles.length > 0 ? (
+            <div className="space-y-4">
+              {stats.popularArticles.map((article, index) => (
+                <div key={index} className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/20 text-primary text-sm font-bold">
+                      {index + 1}
+                    </span>
+                    <span className="font-medium">{article.title}</span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(day.date).toLocaleDateString("en-US", { weekday: "short" })}
-                  </span>
-                  <span className="text-xs font-medium">{day.views}</span>
+                  <div className="flex items-center gap-2 text-muted-foreground">
+                    <Eye className="h-4 w-4" />
+                    <span>{article.views.toLocaleString()}</span>
+                  </div>
                 </div>
               ))}
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Top Pages */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Globe className="h-5 w-5 text-accent" />
-              Top Performing Articles
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stats.popularArticles.length > 0 ? (
-                stats.popularArticles.map((article, index) => (
-                  <div key={article.id} className="flex items-center gap-4">
-                    <div className="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">
-                      {index + 1}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-medium text-foreground truncate">{article.title}</p>
-                      <p className="text-sm text-muted-foreground">
-                        {article.views.toLocaleString()} views
-                      </p>
-                    </div>
-                    <div className="text-sm text-muted-foreground">
-                      {stats.totalViews > 0
-                        ? Math.round((article.views / stats.totalViews) * 100)
-                        : 0}%
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-center text-muted-foreground py-8">No article data yet</p>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Performance Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Performance Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center p-6 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Avg. Views per Article</p>
-              <p className="text-3xl font-bold text-foreground">
-                {stats.totalArticles > 0
-                  ? Math.round(stats.totalViews / stats.totalArticles)
-                  : 0}
-              </p>
-            </div>
-            <div className="text-center p-6 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Best Performing Article</p>
-              <p className="text-lg font-bold text-primary truncate">
-                {stats.popularArticles[0]?.title || "N/A"}
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {stats.popularArticles[0]?.views.toLocaleString() || 0} views
-              </p>
-            </div>
-            <div className="text-center p-6 bg-secondary/50 rounded-lg">
-              <p className="text-sm text-muted-foreground mb-2">Content Growth</p>
-              <p className="text-3xl font-bold text-success">+{stats.totalArticles}</p>
-              <p className="text-sm text-muted-foreground">articles published</p>
-            </div>
-          </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-8">{t("home.noArticles")}</p>
+          )}
         </CardContent>
       </Card>
     </div>
