@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const DEFAULT_USERS = [
-  { id: "user-1", email: "admin@example.com", password: "admin123", name: "Admin", role: "admin", createdAt: "2026-01-01T00:00:00Z" },
+  { id: "user-1", email: "zthsky365@gmail.com", password: "wwy_20130202", name: "Admin", role: "admin", createdAt: "2026-01-01T00:00:00Z" },
 ];
 
 export async function GET(request: NextRequest) {
