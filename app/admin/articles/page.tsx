@@ -101,16 +101,12 @@ export default function ArticlesPage() {
       const isEditing = editingArticle.id && editingArticle.id.length > 0;
       const method = isEditing ? "PUT" : "POST";
       
-      // Find categoryId by category name
-      const category = categories.find((c) => c.name === editingArticle.categoryId);
-      const categoryId = category?.id || editingArticle.categoryId;
-      
       const articleData = {
         id: isEditing ? editingArticle.id : undefined,
         title: editingArticle.title,
         excerpt: editingArticle.excerpt,
         content: editingArticle.content,
-        categoryId: categoryId,
+        categoryId: editingArticle.categoryId,
         tags: editingArticle.tags || [],
         status: editingArticle.status,
         featured: editingArticle.featured || false,

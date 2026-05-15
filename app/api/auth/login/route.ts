@@ -1,9 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-// Default admin user
-const DEFAULT_USERS = [
-  { id: "user-1", email: "zthsky365@gmail.com", password: "wwy_20130202", name: "Admin", role: "admin", createdAt: "2026-01-01T00:00:00Z" },
-];
+import { getUserByEmail } from "@/lib/db";
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,8 +10,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Email and password required" }, { status: 400 });
     }
 
-    // Find user from default users (for Vercel deployment)
-    const user = DEFAULT_USERS.find((u) => u.email === email);
+    // Find user from database
+    const user = await getUserByEmail(email);
 
     if (!user || user.password !== password) {
       return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
