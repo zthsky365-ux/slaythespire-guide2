@@ -35,14 +35,16 @@ interface Article {
   slug: string;
   excerpt: string;
   content: string;
-  category: string;
+  categoryId: string;
+  categoryName?: string;
   tags: string[];
-  author: string;
-  featured: boolean;
-  status: "published" | "draft";
-  views: number;
+  authorId: string;
+  status: "published" | "draft" | "archived";
+  viewCount: number;
+  featured?: boolean;
   createdAt: string;
   updatedAt: string;
+  publishedAt: string | null;
 }
 
 interface Category {
@@ -67,12 +69,24 @@ export default function ArticlesPage() {
   const fetchData = async () => {
     try {
       const [articlesRes, categoriesRes] = await Promise.all([
-        fetch("/api/articles"),
+        fetch("/api/articles?all=true"),
         fetch("/api/categories"),
       ]);
       const articlesData = await articlesRes.json();
       const categoriesData = await categoriesRes.json();
-      setArticles(articlesData);
+      
+      // Map categoryId to categoryName for display
+      const articlesWithCategoryName = articlesData.map((article: Article) => {
+        const category = categoriesData.find((c: Category) => c.id === article.categoryId);
+        return {
+          ...article,
+          categoryName: category?.name || "Uncategorized",
+          featured: article.featured || false,
+          viewCount: article.viewCount || 0,
+        };
+      });
+      
+      setArticles(articlesWithCategoryName);
       setCategories(categoriesData);
     } catch (error) {
       console.error("Failed to fetch data:", error);
@@ -84,11 +98,29 @@ export default function ArticlesPage() {
     if (!editingArticle) return;
 
     try {
-      const method = articles.find((a) => a.id === editingArticle.id) ? "PUT" : "POST";
+      const isEditing = editingArticle.id && editingArticle.id.length > 0;
+      const method = isEditing ? "PUT" : "POST";
+      
+      // Find categoryId by category name
+      const category = categories.find((c) => c.name === editingArticle.categoryId);
+      const categoryId = category?.id || editingArticle.categoryId;
+      
+      const articleData = {
+        id: isEditing ? editingArticle.id : undefined,
+        title: editingArticle.title,
+        excerpt: editingArticle.excerpt,
+        content: editingArticle.content,
+        categoryId: categoryId,
+        tags: editingArticle.tags || [],
+        status: editingArticle.status,
+        featured: editingArticle.featured || false,
+        publishedAt: editingArticle.status === "published" ? (editingArticle.publishedAt || new Date().toISOString()) : null,
+      };
+      
       await fetch("/api/articles", {
         method,
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editingArticle),
+        body: JSON.stringify(articleData),
       });
       setIsDialogOpen(false);
       setEditingArticle(null);
@@ -128,14 +160,15 @@ export default function ArticlesPage() {
               slug: "",
               excerpt: "",
               content: "",
-              category: "",
+              categoryId: "",
               tags: [],
-              author: "Admin",
+              authorId: "user-1",
               featured: false,
               status: "draft",
-              views: 0,
+              viewCount: 0,
               createdAt: new Date().toISOString(),
               updatedAt: new Date().toISOString(),
+              publishedAt: null,
             });
             setIsDialogOpen(true);
           }}
@@ -191,19 +224,21 @@ export default function ArticlesPage() {
                         {article.title}
                       </div>
                     </TableCell>
-                    <TableCell>{article.category}</TableCell>
+                    <TableCell>{article.categoryName || "Uncategorized"}</TableCell>
                     <TableCell>
                       <span
                         className={`px-2 py-1 rounded text-xs ${
                           article.status === "published"
                             ? "bg-green-500/20 text-green-400"
-                            : "bg-yellow-500/20 text-yellow-400"
+                            : article.status === "draft"
+                            ? "bg-yellow-500/20 text-yellow-400"
+                            : "bg-gray-500/20 text-gray-400"
                         }`}
                       >
                         {article.status === "published" ? t("article.published") : t("article.draft")}
                       </span>
                     </TableCell>
-                    <TableCell>{article.views}</TableCell>
+                    <TableCell>{article.viewCount}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
@@ -286,15 +321,15 @@ export default function ArticlesPage() {
                 <div>
                   <label className="text-sm text-muted-foreground mb-2 block">{t("article.category")}</label>
                   <Select
-                    value={editingArticle.category}
-                    onValueChange={(value) => setEditingArticle({ ...editingArticle, category: value })}
+                    value={editingArticle.categoryId}
+                    onValueChange={(value) => setEditingArticle({ ...editingArticle, categoryId: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder={t("article.selectCategory")} />
                     </SelectTrigger>
                     <SelectContent>
                       {categories.map((cat) => (
-                        <SelectItem key={cat.id} value={cat.name}>
+                        <SelectItem key={cat.id} value={cat.id}>
                           {cat.name}
                         </SelectItem>
                       ))}

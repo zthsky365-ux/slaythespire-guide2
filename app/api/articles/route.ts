@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { getPublishedArticles, createArticle, updateArticle, deleteArticle } from "@/lib/db";
+import { getPublishedArticles, getArticles, createArticle, updateArticle, deleteArticle } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const articles = await getPublishedArticles();
+    const { searchParams } = new URL(request.url);
+    const showAll = searchParams.get("all") === "true";
+    
+    // Admin 页面需要获取所有文章（包括草稿），公开页面只获取已发布的
+    const articles = showAll ? await getArticles() : await getPublishedArticles();
     return NextResponse.json(articles);
   } catch (error) {
     console.error("Error fetching articles:", error);
