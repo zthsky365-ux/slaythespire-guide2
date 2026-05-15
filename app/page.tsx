@@ -1,8 +1,11 @@
 import { Suspense } from "react";
+import Link from "next/link";
 import { getPublishedArticles, getCategories, getAdPlacements } from "@/lib/db";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ArticleGrid } from "@/components/articles/article-grid";
 import { AdBanner } from "@/components/ads/ad-banner";
+import { ArticleCard } from "@/components/articles/article-card";
+import { Sparkles, ChevronRight } from "lucide-react";
 
 export default async function HomePage() {
   const [articles, categories, ads] = await Promise.all([
@@ -15,6 +18,20 @@ export default async function HomePage() {
   const popularArticles = [...articles]
     .sort((a, b) => b.viewCount - a.viewCount)
     .slice(0, 5);
+
+  // 最新发布的文章（最近7天内）
+  const oneWeekAgo = new Date();
+  oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
+  const recentArticles = articles.filter((article) => {
+    const publishedDate = new Date(article.publishedAt || article.createdAt);
+    return publishedDate >= oneWeekAgo;
+  });
+
+  // 获取分类名称的映射
+  const categoryMap = categories.reduce((acc, cat) => {
+    acc[cat.id] = cat;
+    return acc;
+  }, {} as Record<string, typeof categories[0]>);
 
   return (
     <div className="min-h-screen">
@@ -58,6 +75,32 @@ export default async function HomePage() {
         </section>
       )}
 
+      {/* New/Recent Articles Section */}
+      {recentArticles.length > 0 && (
+        <section className="py-8 bg-gradient-to-r from-amber-500/10 via-primary/10 to-purple-500/10 border-y border-border">
+          <div className="container mx-auto px-4">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Sparkles className="h-5 w-5 text-amber-500" />
+                <h2 className="font-serif text-xl font-bold">最新发布</h2>
+                <span className="text-xs px-2 py-1 bg-amber-500/20 text-amber-500 rounded-full">
+                  {recentArticles.length} 篇
+                </span>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {recentArticles.slice(0, 6).map((article) => (
+                <ArticleCard 
+                  key={article.id} 
+                  article={article} 
+                  category={categoryMap[article.categoryId]} 
+                />
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* Main Content */}
       <section id="guides" className="py-12">
         <div className="container mx-auto px-4">
@@ -65,7 +108,7 @@ export default async function HomePage() {
             {/* Main Content Area */}
             <div className="lg:col-span-3">
               <div className="flex items-center justify-between mb-8">
-                <h2 className="font-serif text-2xl font-bold">Latest Guides</h2>
+                <h2 className="font-serif text-2xl font-bold">All Guides</h2>
                 <span className="text-sm text-muted-foreground">
                   {articles.length} articles
                 </span>
