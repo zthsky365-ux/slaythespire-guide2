@@ -15,12 +15,12 @@ interface ArticleCardProps {
   featured?: boolean;
 }
 
-function ImageWithFallback({ src, alt, fill, className }: { src: string; alt: string; fill?: boolean; className?: string }) {
+function ImageWithFallback({ src, alt, className }: { src: string; alt: string; className?: string }) {
   const [hasError, setHasError] = useState(false);
   
   if (hasError) {
     return (
-      <div className={`bg-secondary flex items-center justify-center ${fill ? "absolute inset-0" : ""} ${className}`}>
+      <div className={`bg-secondary flex items-center justify-center ${className}`}>
         <span className="text-muted-foreground text-sm">Image unavailable</span>
       </div>
     );
@@ -30,9 +30,11 @@ function ImageWithFallback({ src, alt, fill, className }: { src: string; alt: st
     <Image
       src={src}
       alt={alt}
-      fill={fill}
+      fill
+      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
       className={className}
       onError={() => setHasError(true)}
+      unoptimized={src.startsWith('http')}
     />
   );
 }

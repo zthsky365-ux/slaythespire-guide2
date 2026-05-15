@@ -85,6 +85,8 @@ export default async function ArticlePage({ params }: PageProps) {
             fill
             className="object-cover"
             priority
+            sizes="100vw"
+            unoptimized={imageUrl.startsWith('http')}
           />
         </div>
         <div className="absolute inset-0 flex items-end">

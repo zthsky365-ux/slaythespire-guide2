@@ -305,6 +305,25 @@ export default function ArticlesPage() {
                 />
               </div>
               <div>
+                <label className="text-sm text-muted-foreground mb-2 block">封面图片 URL</label>
+                <Input
+                  value={editingArticle.coverImage || ""}
+                  onChange={(e) => setEditingArticle({ ...editingArticle, coverImage: e.target.value })}
+                  placeholder="https://example.com/image.jpg 或 /images/xxx.jpg"
+                />
+                {editingArticle.coverImage && (
+                  <div className="mt-2 relative h-32 w-full rounded-lg overflow-hidden bg-secondary">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={editingArticle.coverImage}
+                      alt="封面预览"
+                      className="w-full h-full object-cover"
+                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                    />
+                  </div>
+                )}
+              </div>
+              <div>
                 <label className="text-sm text-muted-foreground mb-2 block">{t("article.content")}</label>
                 <MarkdownEditor
                   value={editingArticle.content}

@@ -37,8 +37,10 @@ function RelatedArticleCard({ article }: { article: Article }) {
             src={imageUrl}
             alt={article.title}
             fill
+            sizes="300px"
             className="object-cover group-hover:scale-105 transition-transform duration-500"
             onError={() => setHasError(true)}
+            unoptimized={imageUrl.startsWith('http')}
           />
         )}
       </div>
