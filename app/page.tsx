@@ -7,6 +7,9 @@ import { AdBanner } from "@/components/ads/ad-banner";
 import { ArticleCard } from "@/components/articles/article-card";
 import { Sparkles, ChevronRight } from "lucide-react";
 
+// 每60秒重新验证缓存，确保新发布的内容能及时显示
+export const revalidate = 60;
+
 export default async function HomePage() {
   const [articles, categories, ads] = await Promise.all([
     getPublishedArticles(),
