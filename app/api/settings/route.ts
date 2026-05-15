@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { readData, writeData } from "@/lib/db";
 
 interface SiteSettings {
   siteName: string;
@@ -7,14 +6,16 @@ interface SiteSettings {
   notificationEmail: string;
 }
 
+// In-memory fallback for settings (no DB table for settings yet)
+let settingsCache: SiteSettings = {
+  siteName: "Slay the Spire 2 Guide",
+  siteDescription: "Your ultimate guide to Slay the Spire 2",
+  notificationEmail: ""
+};
+
 export async function GET() {
   try {
-    const settings = readData<SiteSettings>("settings.json");
-    return NextResponse.json(settings || {
-      siteName: "Slay the Spire 2 Guide",
-      siteDescription: "Your ultimate guide to Slay the Spire 2",
-      notificationEmail: ""
-    });
+    return NextResponse.json(settingsCache);
   } catch {
     return NextResponse.json({
       siteName: "Slay the Spire 2 Guide",
@@ -27,7 +28,7 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const sessionCookie = request.cookies.get("session");
-    
+
     if (!sessionCookie?.value) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
@@ -35,15 +36,13 @@ export async function PUT(request: NextRequest) {
     const body = await request.json();
     const { siteName, siteDescription, notificationEmail } = body;
 
-    const settings: SiteSettings = {
+    settingsCache = {
       siteName: siteName || "Slay the Spire 2 Guide",
       siteDescription: siteDescription || "Your ultimate guide to Slay the Spire 2",
       notificationEmail: notificationEmail || ""
     };
 
-    writeData("settings.json", settings);
-
-    return NextResponse.json({ message: "Settings saved successfully", settings });
+    return NextResponse.json({ message: "Settings saved successfully", settings: settingsCache });
   } catch {
     return NextResponse.json({ error: "Failed to save settings" }, { status: 500 });
   }

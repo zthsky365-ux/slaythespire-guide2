@@ -71,12 +71,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
     }
 
-    const success = await deleteCategory(id);
-
-    if (!success) {
-      return NextResponse.json({ error: "Category not found" }, { status: 404 });
-    }
-
+    await deleteCategory(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting category:", error);

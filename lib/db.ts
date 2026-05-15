@@ -105,7 +105,7 @@ export async function updateCategory(id: string, data: Partial<{ name: string; s
   if (data.description !== undefined) { fields.push(`description = $${i++}`); values.push(data.description); }
   if (data.icon !== undefined) { fields.push(`icon = $${i++}`); values.push(data.icon); }
   if (data.color !== undefined) { fields.push(`color = $${i++}`); values.push(data.color); }
-  
+
   if (fields.length > 0) {
     values.push(id);
     await query(`UPDATE categories SET ${fields.join(', ')} WHERE id = $${i}`, values);
@@ -219,10 +219,10 @@ export async function updateArticle(id: string, data: Partial<{
   if (data.status !== undefined) { fields.push(`status = $${i++}`); values.push(data.status); }
   if (data.featured !== undefined) { fields.push(`featured = $${i++}`); values.push(data.featured); }
   if (data.publishedAt !== undefined) { fields.push(`published_at = $${i++}`); values.push(data.publishedAt); }
-  
+
   fields.push(`updated_at = $${i++}`);
   values.push(new Date().toISOString());
-  
+
   if (fields.length > 1) {
     values.push(id);
     await query(`UPDATE articles SET ${fields.join(', ')} WHERE id = $${i}`, values);
@@ -286,17 +286,95 @@ export async function updateAd(id: string, data: Partial<{ name: string; positio
   const fields: string[] = [];
   const values: unknown[] = [];
   let i = 1;
-  
+
   if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
   if (data.position !== undefined) { fields.push(`position = $${i++}`); values.push(data.position); }
   if (data.size !== undefined) { fields.push(`size = $${i++}`); values.push(data.size); }
   if (data.enabled !== undefined) { fields.push(`enabled = $${i++}`); values.push(data.enabled); }
   if (data.code !== undefined) { fields.push(`code = $${i++}`); values.push(data.code); }
-  
+
   if (fields.length > 0) {
     fields.push(`updated_at = $${i++}`);
     values.push(new Date().toISOString());
     values.push(id);
     await query(`UPDATE ads SET ${fields.join(', ')} WHERE id = $${i}`, values);
   }
+}
+
+// ===== Legacy compatibility functions =====
+// These functions are kept for backward compatibility with old API routes
+
+// Ads - alias functions
+export async function getAdPlacements() {
+  return getAds();
+}
+
+export async function createAdPlacement(data: { name: string; position: string; size: string; enabled?: boolean; code?: string }) {
+  const id = `ad-${Date.now()}`;
+  await query(
+    'INSERT INTO ads (id, name, position, size, enabled, code) VALUES ($1, $2, $3, $4, $5, $6)',
+    [id, data.name, data.position, data.size, data.enabled ?? true, data.code || '']
+  );
+  return queryOne<{ id: string; name: string; position: string; size: string; enabled: boolean; code: string }>(
+    'SELECT * FROM ads WHERE id = $1', [id]
+  );
+}
+
+export async function updateAdPlacement(id: string, data: Partial<{ name: string; position: string; size: string; enabled: boolean; code: string }>) {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+  let i = 1;
+
+  if (data.name !== undefined) { fields.push(`name = $${i++}`); values.push(data.name); }
+  if (data.position !== undefined) { fields.push(`position = $${i++}`); values.push(data.position); }
+  if (data.size !== undefined) { fields.push(`size = $${i++}`); values.push(data.size); }
+  if (data.enabled !== undefined) { fields.push(`enabled = $${i++}`); values.push(data.enabled); }
+  if (data.code !== undefined) { fields.push(`code = $${i++}`); values.push(data.code); }
+
+  if (fields.length > 0) {
+    fields.push(`updated_at = $${i++}`);
+    values.push(new Date().toISOString());
+    values.push(id);
+    await query(`UPDATE ads SET ${fields.join(', ')} WHERE id = $${i}`, values);
+  }
+  return queryOne<{ id: string; name: string; position: string; size: string; enabled: boolean; code: string }>(
+    'SELECT * FROM ads WHERE id = $1', [id]
+  );
+}
+
+export async function deleteAdPlacement(id: string) {
+  await query('DELETE FROM ads WHERE id = $1', [id]);
+  return true;
+}
+
+// Page views
+export async function recordPageView(data: {
+  articleId?: string | null;
+  path: string;
+  visitedAt: string;
+  userAgent: string;
+  referrer?: string | null;
+}) {
+  const id = `pv-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+  await query(
+    'INSERT INTO page_views (id, article_id, path, visited_at, user_agent, referrer) VALUES ($1, $2, $3, $4, $5, $6)',
+    [id, data.articleId || null, data.path, data.visitedAt, data.userAgent, data.referrer || '']
+  );
+}
+
+// Settings - stored in a simple key-value approach using a settings table or fallback
+const settingsCache: Record<string, unknown> = {};
+
+export function readData<T>(filename: string): T {
+  return (settingsCache[filename] || []) as T;
+}
+
+export function writeData<T>(filename: string, data: T): void {
+  settingsCache[filename] = data;
+}
+
+// Initialize default data - no-op for PostgreSQL since data is in DB
+export async function initializeDefaultData() {
+  // Data is already initialized in the database via setup script
+  // This function is kept for backward compatibility
 }

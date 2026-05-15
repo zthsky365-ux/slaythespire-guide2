@@ -85,12 +85,7 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: "Article ID is required" }, { status: 400 });
     }
 
-    const success = await deleteArticle(id);
-
-    if (!success) {
-      return NextResponse.json({ error: "Article not found" }, { status: 404 });
-    }
-
+    await deleteArticle(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error deleting article:", error);

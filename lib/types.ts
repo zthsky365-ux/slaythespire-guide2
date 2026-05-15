@@ -44,12 +44,10 @@ export interface User {
 export interface AdPlacement {
   id: string;
   name: string;
-  position: "header" | "sidebar" | "content" | "footer";
-  size: "728x90" | "300x250" | "300x600" | "320x50";
+  position: string;
+  size: string;
   enabled: boolean;
   code: string;
-  createdAt: string;
-  updatedAt: string;
 }
 
 export interface PageView {
