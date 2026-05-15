@@ -7,14 +7,18 @@ export async function POST(request: NextRequest) {
     const { email, password } = body;
 
     if (!email || !password) {
-      return NextResponse.json({ error: "Email and password required" }, { status: 400 });
+      return NextResponse.json({ error: "邮箱和密码不能为空" }, { status: 400 });
     }
 
     // Find user from database
     const user = await getUserByEmail(email);
 
-    if (!user || user.password !== password) {
-      return NextResponse.json({ error: "Invalid credentials" }, { status: 401 });
+    if (!user) {
+      return NextResponse.json({ error: "用户不存在" }, { status: 401 });
+    }
+
+    if (user.password !== password) {
+      return NextResponse.json({ error: "密码错误" }, { status: 401 });
     }
 
     // Create session token
@@ -24,7 +28,7 @@ export async function POST(request: NextRequest) {
 
     const response = NextResponse.json({
       user: safeUser,
-      message: "Login successful"
+      message: "登录成功"
     });
 
     // Set session cookie
@@ -46,7 +50,11 @@ export async function POST(request: NextRequest) {
     });
 
     return response;
-  } catch {
-    return NextResponse.json({ error: "Login failed" }, { status: 500 });
+  } catch (error) {
+    console.error("Login error:", error);
+    return NextResponse.json({ 
+      error: "登录失败，请稍后重试",
+      details: error instanceof Error ? error.message : "Unknown error"
+    }, { status: 500 });
   }
 }
