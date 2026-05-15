@@ -38,6 +38,49 @@ export default function MarkdownEditor({
 
   return (
     <div data-color-mode="dark" className="markdown-editor-wrapper">
+      <style jsx global>{`
+        .w-md-editor {
+          background-color: hsl(var(--background)) !important;
+          border: 1px solid hsl(var(--border)) !important;
+        }
+        .w-md-editor-text-input {
+          color: hsl(var(--foreground)) !important;
+        }
+        .w-md-editor-text-pre {
+          color: hsl(var(--foreground)) !important;
+        }
+        .w-md-editor-toolbar {
+          background-color: hsl(var(--card)) !important;
+          border-bottom: 1px solid hsl(var(--border)) !important;
+        }
+        .w-md-editor-toolbar ul > li > button {
+          color: hsl(var(--foreground)) !important;
+        }
+        .w-md-editor-toolbar ul > li > button:hover {
+          background-color: hsl(var(--accent)) !important;
+        }
+        .w-md-editor-preview {
+          background-color: hsl(var(--card)) !important;
+        }
+        .w-md-editor-preview .editor-preview {
+          color: hsl(var(--foreground)) !important;
+        }
+        .w-md-editor-preview img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 16px 0;
+        }
+        .wmde-markdown {
+          background-color: hsl(var(--background)) !important;
+        }
+        .wmde-markdown img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 8px;
+          margin: 16px 0;
+        }
+      `}</style>
       <MDEditor
         value={value}
         onChange={(val) => onChange(val || "")}

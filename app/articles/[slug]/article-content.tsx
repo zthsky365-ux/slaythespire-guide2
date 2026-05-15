@@ -93,6 +93,18 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                 strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
                 code: ({ children }) => <code className="bg-muted px-1.5 py-0.5 rounded text-purple-300 font-mono text-sm">{children}</code>,
                 blockquote: ({ children }) => <blockquote className="border-l-4 border-purple-500 pl-4 italic text-gray-400 my-4">{children}</blockquote>,
+                img: ({ src, alt }) => (
+                  <span className="my-4 block">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img 
+                      src={src} 
+                      alt={alt || ''} 
+                      className="max-w-full h-auto rounded-lg mx-auto"
+                      style={{ maxHeight: '500px', objectFit: 'contain' }}
+                      loading="lazy"
+                    />
+                  </span>
+                ),
               }}
             >
               {article.content}
