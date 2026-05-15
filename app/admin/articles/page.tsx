@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/select";
 import { Plus, Pencil, Trash2, Eye, Star, Search } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
-import { Textarea } from "@/components/ui/textarea";
+import MarkdownEditor from "@/components/admin/markdown-editor";
 
 interface Article {
   id: string;
@@ -306,11 +306,11 @@ export default function ArticlesPage() {
               </div>
               <div>
                 <label className="text-sm text-muted-foreground mb-2 block">{t("article.content")}</label>
-                <Textarea
+                <MarkdownEditor
                   value={editingArticle.content}
-                  onChange={(e) => setEditingArticle({ ...editingArticle, content: e.target.value })}
+                  onChange={(value) => setEditingArticle({ ...editingArticle, content: value })}
                   placeholder={t("article.articleContent")}
-                  className="min-h-[200px]"
+                  minHeight={400}
                 />
               </div>
               <div className="grid grid-cols-2 gap-4">
