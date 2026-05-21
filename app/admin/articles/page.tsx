@@ -35,6 +35,7 @@ interface Article {
   slug: string;
   excerpt: string;
   content: string;
+  coverImage: string | null;
   categoryId: string;
   categoryName?: string;
   tags: string[];
