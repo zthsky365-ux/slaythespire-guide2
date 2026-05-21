@@ -157,6 +157,7 @@ export default function ArticlesPage() {
               slug: "",
               excerpt: "",
               content: "",
+              coverImage: null,
               categoryId: "",
               tags: [],
               authorId: "user-1",
