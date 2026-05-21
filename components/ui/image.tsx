@@ -36,6 +36,7 @@ export function OptimizedImage({ src, alt, fill, className, priority, sizes }: O
       priority={priority}
       sizes={sizes}
       onError={handleError}
+      unoptimized={src.startsWith('http')}
     />
   );
 }
