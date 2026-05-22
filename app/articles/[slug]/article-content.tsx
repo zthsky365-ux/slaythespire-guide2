@@ -185,11 +185,20 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                 img: ({ src, alt, ...rest }) => {
                   const imgSrc = String(src || "");
                   const htmlProps = rest as Record<string, unknown>;
-                  // style 可能是 string 或 object，统一转字符串
+                  // rehype-raw 解析 style 可能返回:
+                  //   - string (少见，如 "__dangerouslySetInnerHTML" 场景)
+                  //   - React CSSProperties 对象 (常见，标准 HTML style 属性解析结果)
                   const rawStyle = htmlProps?.style;
-                  const styleStr = typeof rawStyle === "string" ? rawStyle : "";
-                  // 解析 HTML 上的内联样式
-                  const parsedStyle = styleStr ? parseStyleString(styleStr) : {};
+                  let parsedStyle: Record<string, string> = {};
+                  if (typeof rawStyle === "string" && rawStyle) {
+                    parsedStyle = parseStyleString(rawStyle);
+                  } else if (rawStyle && typeof rawStyle === "object") {
+                    // rehype-raw 已经把 style="width:200px;height:200px" 转成了 {width:"200px",height:"200px"}
+                    parsedStyle = rawStyle as Record<string, string>;
+                  }
+
+                  // 用户是否设了宽度相关属性
+                  const hasCustomWidth = !!(parsedStyle.width || parsedStyle.maxWidth);
 
                   // 画廊内部：简洁渲染，透传 style 属性，不加额外 span 包裹
                   if (insideGallery.current) {
@@ -206,8 +215,6 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   }
 
                   // 普通独立图片：完整 lightbox 渲染，尊重用户设定的尺寸
-                  // 用户设了 width 则不强制 max-w-full
-                  const hasCustomWidth = parsedStyle.width || parsedStyle.maxWidth;
                   return (
                     <span
                       className="my-4 block group relative cursor-zoom-in"
