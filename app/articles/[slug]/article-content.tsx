@@ -200,21 +200,25 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   // 用户是否设了宽度相关属性
                   const hasCustomWidth = !!(parsedStyle.width || parsedStyle.maxWidth);
 
-                  // 画廊内部：简洁渲染，透传 style 属性，不加额外 span 包裹
+                  // 画廊内部：完全由用户 style 控制，不添加任何约束 class
                   if (insideGallery.current) {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     return (
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        style={Object.keys(parsedStyle).length > 0 ? parsedStyle : undefined}
+                        style={
+                          Object.keys(parsedStyle).length > 0
+                            ? parsedStyle
+                            : { width: "100%", height: "auto" }
+                        }
                         loading="lazy"
                         onClick={() => openLightbox(imgSrc, alt || "")}
                       />
                     );
                   }
 
-                  // 普通独立图片：完全由后台 style 控制尺寸，不做任何硬编码限制
+                  // 普通独立图片：完全由后台 style 控制，不做任何硬编码限制
                   return (
                     <span
                       className="my-4 block group relative cursor-zoom-in"
@@ -227,11 +231,10 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        style={Object.keys(parsedStyle).length > 0 ? parsedStyle : undefined}
-                        className={
-                          hasCustomWidth
-                            ? "h-auto rounded-lg cursor-zoom-in"
-                            : "max-w-full h-auto rounded-lg cursor-zoom-in"
+                        style={
+                          Object.keys(parsedStyle).length > 0
+                            ? parsedStyle
+                            : undefined
                         }
                         loading="lazy"
                       />

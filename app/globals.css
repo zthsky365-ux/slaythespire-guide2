@@ -171,7 +171,15 @@
   @apply text-purple-400 hover:text-purple-300 underline;
 }
 
+/* 覆盖 @tailwindcss/typography 默认的 img 约束，让图片完全由内联 style 控制 */
+.prose :where(img) {
+  max-width: none !important;
+  height: auto;
+  /* 不设置任何默认尺寸，全部交由 style 属性控制 */
+}
+
 /* ===== 图片画廊布局样式 ===== */
+/* 画廊容器：仅控制网格布局，不对子元素做任何尺寸约束 */
 .image-gallery {
   @apply grid gap-3 my-6;
 }
@@ -192,24 +200,13 @@
   @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-4;
 }
 
-/* 画廊内的图片样式 */
+/* 画廊内的 span（Markdown 段落包裹层）— 仅重置 margin */
 .image-gallery span {
   margin-top: 0;
   margin-bottom: 0;
 }
 
-/* 画廊内图片：默认撑满网格，完整显示不裁剪；用户可通过 style 覆盖尺寸 */
-.image-gallery img {
-  max-width: 100%;
-  height: auto;
-  object-fit: contain;
-  border-radius: 0.5rem;
-  cursor: zoom-in;
-}
-.image-gallery img:hover {
-  opacity: 0.9;
-}
-
+/* 画廊内段落说明文字 */
 .image-gallery p {
   @apply text-center text-xs my-1;
 }
