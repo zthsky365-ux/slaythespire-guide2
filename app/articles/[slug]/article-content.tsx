@@ -161,7 +161,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   <blockquote className="border-l-4 border-purple-500 pl-4 italic text-gray-400 my-4">{children}</blockquote>
                 ),
                 img: ({ src, alt, ...rest }) => {
-                  const imgSrc = src || "";
+                  const imgSrc = String(src || "");
                   // 检测是否在 gallery 内部 — 通过检查是否有特定的 className
                   const htmlProps = rest as Record<string, unknown>;
                   const style = (htmlProps?.style as string) || "";
@@ -170,7 +170,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   return (
                     <span
                       className="my-4 block group relative cursor-zoom-in"
-                      onClick={() => openLightbox(imgSrc, alt || "")}
+                      onClick={() => openLightbox(String(imgSrc), alt || "")}
                     >
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg z-10 flex items-center justify-center">
                         <ZoomIn className="h-8 w-8 text-white" />
