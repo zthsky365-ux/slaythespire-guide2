@@ -10,7 +10,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { getImageUrl } from "@/lib/utils";
 import type { Article, AdPlacement } from "@/lib/types";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 
 interface ArticleContentProps {
   article: Article;
@@ -79,20 +79,36 @@ function LightboxModal({ src, alt, onClose }: { src: string; alt: string; onClos
   );
 }
 
-/** 提取 HTML 属性 */
-function extractHtmlProps(htmlProps: Record<string, unknown>) {
-  const className = (htmlProps?.className as string) || (htmlProps?.class as string) || "";
-  const dataCols = (htmlProps?.["data-cols"] as string) || "2";
-  const style = (htmlProps?.style as string) || "";
-  return { className, dataCols: parseInt(dataCols, 10) || 2, style };
+/** 安全地提取 className（支持 string 和 string[]） */
+function getClassName(props: Record<string, unknown>): string {
+  const cn = props?.className;
+  if (typeof cn === "string") return cn;
+  if (Array.isArray(cn)) return cn.join(" ");
+  const cls = (props?.class as string) || "";
+  if (typeof cls === "string") return cls;
+  if (Array.isArray(cls)) return cls.join("");
+  return "";
+}
+
+/** 检查 className 是否包含某个 class */
+function hasClass(props: Record<string, unknown>, name: string): boolean {
+  return getClassName(props).split(/\s+/).includes(name);
 }
 
 export function ArticleContent({ article, contentAd, relatedArticles, ads }: ArticleContentProps) {
   const [lightbox, setLightbox] = useState<{ src: string; alt: string } | null>(null);
+  /** 用 ref 追踪当前是否在 gallery 内部，避免给画廊内图片加多余包裹 */
+  const insideGallery = useRef(false);
 
   const openLightbox = useCallback((src: string, alt: string) => {
     setLightbox({ src, alt });
   }, []);
+
+  // 预处理内容：确保 image-gallery 的 data-cols 属性存在
+  const processedContent = article.content.replace(
+    /<div\s+class="image-gallery"\s*>/g,
+    '<div class="image-gallery" data-cols="2">'
+  );
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -131,17 +147,22 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
               rehypePlugins={[rehypeRaw]}
               components={{
                 h1: ({ children }) => (
-                  <h1 className="text-3xl font-bold text-white mb-6 mt-8 font-serif" id={typeof children === 'string' ? children?.toString().toLowerCase().replace(/\s+/g, '-') : undefined}>{children}</h1>
+                  <h1 className="text-3xl font-bold text-white mb-6 mt-8 font-serif">{children}</h1>
                 ),
                 h2: ({ children }) => (
-                  <h2 className="text-2xl font-bold text-white mb-4 mt-8 font-serif" id={typeof children === 'string' ? children?.toString().toLowerCase().replace(/\s+/g, '-') : undefined}>{children}</h2>
+                  <h2 className="text-2xl font-bold text-white mb-4 mt-8 font-serif">{children}</h2>
                 ),
                 h3: ({ children }) => (
                   <h3 className="text-xl font-semibold text-purple-300 mb-3 mt-6">{children}</h3>
                 ),
-                p: ({ children }) => (
-                  <p className="text-gray-300 mb-4 leading-relaxed">{children}</p>
-                ),
+                p: ({ children, ...rest }) => {
+                  // 如果在 gallery 内部，p 标签不加额外 margin（避免影响 grid）
+                  const props = rest as Record<string, unknown>;
+                  if (insideGallery.current) {
+                    return <p className="text-center text-xs text-muted-foreground my-1">{children}</p>;
+                  }
+                  return <p className="text-gray-300 mb-4 leading-relaxed">{children}</p>;
+                },
                 ul: ({ children }) => (
                   <ul className="list-disc list-inside mb-4 space-y-2">{children}</ul>
                 ),
@@ -162,47 +183,53 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                 ),
                 img: ({ src, alt, ...rest }) => {
                   const imgSrc = String(src || "");
-                  // 检测是否在 gallery 内部 — 通过检查是否有特定的 className
                   const htmlProps = rest as Record<string, unknown>;
-                  const style = (htmlProps?.style as string) || "";
-                  const imgWidth = (htmlProps?.width as string) || "";
+                  const styleStr = (htmlProps?.style as string) || "";
 
+                  // 画廊内部：简洁渲染，不加额外 span 包裹
+                  if (insideGallery.current) {
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    return (
+                      <img
+                        src={imgSrc}
+                        alt={alt || ""}
+                        className="w-full h-auto object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
+                        loading="lazy"
+                        onClick={() => openLightbox(imgSrc, alt || "")}
+                      />
+                    );
+                  }
+
+                  // 普通独立图片：完整 lightbox 渲染
                   return (
                     <span
-                      className="my-4 block group relative cursor-zoom-in"
-                      onClick={() => openLightbox(String(imgSrc), alt || "")}
+                      className="my-4 block group relative cursor-zoom-in inline-block w-full"
+                      onClick={() => openLightbox(imgSrc, alt || "")}
                     >
-                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg z-10 flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg z-10 flex items-center justify-center pointer-events-none">
                         <ZoomIn className="h-8 w-8 text-white" />
                       </div>
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        width={imgWidth || undefined}
-                        style={
-                          style
-                            ? { maxHeight: "500px", objectFit: "contain", ...parseStyleString(style) }
-                            : { maxHeight: "500px", objectFit: "contain" }
-                        }
+                        style={{ maxHeight: "500px", objectFit: "contain", ...(styleStr ? parseStyleString(styleStr) : {}) }}
                         className="max-w-full h-auto rounded-lg mx-auto cursor-zoom-in"
                         loading="lazy"
                       />
-                      {alt && (
-                        <p className="text-center text-xs text-muted-foreground mt-2 italic">
-                          {alt}
-                        </p>
-                      )}
+                      {alt ? (
+                        <p className="text-center text-xs text-muted-foreground mt-2 italic">{alt}</p>
+                      ) : null}
                     </span>
                   );
                 },
                 div: ({ node, children, ...props }) => {
                   const htmlProps = (node?.properties || props) as Record<string, unknown>;
-                  const { className, dataCols } = extractHtmlProps(htmlProps);
 
                   // 图片画廊布局
-                  if (className.includes("image-gallery")) {
-                    const cols = Math.min(dataCols, 4); // 最多4列
+                  if (hasClass(htmlProps, "image-gallery")) {
+                    const rawCols = String(htmlProps?.["data-cols"] || "2");
+                    const cols = Math.min(parseInt(rawCols, 10) || 2, 4);
                     const colClasses: Record<number, string> = {
                       1: "grid-cols-1",
                       2: "grid-cols-1 sm:grid-cols-2",
@@ -210,15 +237,22 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                       4: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
                     };
 
-                    return (
-                      <div className={`grid ${colClasses[cols] || "grid-cols-1 sm:grid-cols-2"} gap-3 my-6`}>
+                    insideGallery.current = true;
+                    const result = (
+                      <div
+                        className={`image-gallery ${colClasses[cols]} grid gap-4 my-6`}
+                        data-cols={String(cols)}
+                      >
                         {children}
                       </div>
                     );
+                    // 使用 setTimeout 确保 children 渲染完成后再重置
+                    setTimeout(() => { insideGallery.current = false; }, 0);
+                    return result;
                   }
 
                   // 图片带标题容器
-                  if (className.includes("image-with-caption")) {
+                  if (hasClass(htmlProps, "image-with-caption")) {
                     return (
                       <div className="my-6 border border-border/50 rounded-xl overflow-hidden bg-card/50">
                         {children}
@@ -229,28 +263,9 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   // 默认 div
                   return <div {...props}>{children}</div>;
                 },
-                // 处理 <figure> 标签（某些编辑器输出）
-                figure: ({ children, ...props }) => {
-                  const htmlProps = props as Record<string, unknown>;
-                  const className = (htmlProps?.className as string) || (htmlProps?.class as string) || "";
-
-                  if (className.includes("image")) {
-                    return (
-                      <figure className="my-6">
-                        {children}
-                      </figure>
-                    );
-                  }
-                  return <figure {...props}>{children}</figure>;
-                },
-                figcaption: ({ children }) => (
-                  <figcaption className="text-center text-sm text-muted-foreground mt-2 italic px-4">
-                    {children}
-                  </figcaption>
-                ),
               }}
             >
-              {article.content}
+              {processedContent}
             </ReactMarkdown>
           </div>
 
@@ -330,7 +345,6 @@ function parseStyleString(style: string): Record<string, string> {
   style.split(";").forEach((decl) => {
     const [prop, val] = decl.split(":").map((s) => s.trim());
     if (prop && val) {
-      // 将 CSS 属性转为 camelCase
       const camelProp = prop.replace(/-([a-z])/g, (_, c) => c.toUpperCase());
       result[camelProp] = val;
     }
