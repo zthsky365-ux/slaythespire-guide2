@@ -84,9 +84,10 @@ function getClassName(props: Record<string, unknown>): string {
   const cn = props?.className;
   if (typeof cn === "string") return cn;
   if (Array.isArray(cn)) return cn.join(" ");
-  const cls = (props?.class as string) || "";
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const cls = (props as any)?.class || "";
   if (typeof cls === "string") return cls;
-  if (Array.isArray(cls)) return cls.join("");
+  if (Array.isArray(cls)) return (cls as unknown[]).map(String).join(" ");
   return "";
 }
 
