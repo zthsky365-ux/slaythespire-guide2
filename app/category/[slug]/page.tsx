@@ -3,7 +3,10 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { getCategoryBySlug, getPublishedArticles, getCategories } from "@/lib/db";
 import { ArticleGrid } from "@/components/articles/article-grid";
+import { BreadcrumbListJsonLd, CollectionPageJsonLd } from "@/components/seo/json-ld";
 import type { Metadata } from "next";
+
+const BASE_URL = "https://www.sxdgame.com";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -17,9 +20,35 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Category Not Found" };
   }
 
+  const categoryUrl = `${BASE_URL}/category/${category.slug}`;
+
   return {
-    title: `${category.name} - Slay the Spire 2 Guides`,
-    description: category.description,
+    title: category.name,
+    description: category.description || `Browse all ${category.name} guides and strategies for Slay the Spire 2.`,
+    alternates: {
+      canonical: categoryUrl,
+    },
+    openGraph: {
+      title: `${category.name} - Slay the Spire 2 Guides`,
+      description: category.description || `Browse all ${category.name} guides and strategies for Slay the Spire 2.`,
+      url: categoryUrl,
+      type: "website",
+      siteName: "Slay Guide",
+      images: [
+        {
+          url: `${BASE_URL}/og`,
+          width: 1200,
+          height: 630,
+          alt: `${category.name} Guides`,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${category.name} - Slay the Spire 2 Guides`,
+      description: category.description || `Browse all ${category.name} guides and strategies.`,
+      images: [`${BASE_URL}/og`],
+    },
   };
 }
 
@@ -40,6 +69,19 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
+      {/* Structured Data */}
+      <BreadcrumbListJsonLd
+        items={[
+          { name: "Home", url: BASE_URL },
+          { name: category.name, url: `${BASE_URL}/category/${category.slug}` },
+        ]}
+      />
+      <CollectionPageJsonLd
+        name={`${category.name} Guides`}
+        description={category.description || `Browse all ${category.name} guides for Slay the Spire 2.`}
+        url={`${BASE_URL}/category/${category.slug}`}
+      />
+
       {/* Header */}
       <header 
         className="py-16 bg-gradient-to-b from-card to-background"

@@ -1,9 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
+const BASE_URL = "https://www.sxdgame.com";
+
 export const metadata: Metadata = {
-  title: "Terms of Service - Slay the Spire Guide",
-  description: "Terms of Service for Slay the Spire Guide.",
+  title: "Terms of Service",
+  description: "Terms of Service for Slay Guide - understand the rules and conditions for using our website.",
+  alternates: {
+    canonical: `${BASE_URL}/terms`,
+  },
+  openGraph: {
+    title: "Terms of Service - Slay Guide",
+    description: "Understand the rules and conditions for using Slay Guide.",
+    url: `${BASE_URL}/terms`,
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
 };
 
 export default function TermsPage() {

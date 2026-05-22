@@ -1,9 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
+const BASE_URL = "https://www.sxdgame.com";
+
 export const metadata: Metadata = {
-  title: "Privacy Policy - Slay the Spire Guide",
-  description: "Privacy Policy for Slay the Spire Guide.",
+  title: "Privacy Policy",
+  description: "Privacy Policy for Slay Guide - learn how we handle your data and protect your privacy.",
+  alternates: {
+    canonical: `${BASE_URL}/privacy`,
+  },
+  openGraph: {
+    title: "Privacy Policy - Slay Guide",
+    description: "Learn how Slay Guide handles your data and protects your privacy.",
+    url: `${BASE_URL}/privacy`,
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
 };
 
 export default function PrivacyPage() {

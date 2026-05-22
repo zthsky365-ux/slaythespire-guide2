@@ -6,7 +6,10 @@ import { getArticleBySlug, getPublishedArticles, getCategories, getAdPlacements,
 import { formatDate, getImageUrl, readingTime } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ArticleContent } from "./article-content";
+import { ArticleJsonLd, BreadcrumbListJsonLd } from "@/components/seo/json-ld";
 import type { Metadata } from "next";
+
+const BASE_URL = "https://www.sxdgame.com";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -20,14 +23,47 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: "Article Not Found" };
   }
 
+  const articleUrl = `${BASE_URL}/articles/${article.slug}`;
+  const coverImageUrl = article.coverImage
+    ? (article.coverImage.startsWith("http") ? article.coverImage : `${BASE_URL}${article.coverImage}`)
+    : `${BASE_URL}/og`;
+
   return {
     title: article.title,
     description: article.excerpt,
+    alternates: {
+      canonical: articleUrl,
+    },
     openGraph: {
       title: article.title,
       description: article.excerpt,
+      url: articleUrl,
       type: "article",
-      publishedTime: article.publishedAt || undefined,
+      publishedTime: article.publishedAt || article.createdAt,
+      modifiedTime: article.updatedAt,
+      siteName: "Slay Guide",
+      images: [
+        {
+          url: coverImageUrl,
+          width: 1200,
+          height: 630,
+          alt: article.title,
+        },
+      ],
+      tags: article.tags,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: article.title,
+      description: article.excerpt,
+      images: [coverImageUrl],
+    },
+    other: {
+      "article:published_time": article.publishedAt || article.createdAt,
+      "article:modified_time": article.updatedAt,
+      ...(article.tags.length > 0
+        ? Object.fromEntries(article.tags.map((tag, i) => [`article:tag:${i}`, tag]))
+        : {}),
     },
   };
 }
@@ -75,6 +111,22 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
+      {/* Structured Data */}
+      <ArticleJsonLd
+        article={article}
+        category={category}
+        url={`${BASE_URL}/articles/${article.slug}`}
+      />
+      <BreadcrumbListJsonLd
+        items={[
+          { name: "Home", url: BASE_URL },
+          ...(category
+            ? [{ name: category.name, url: `${BASE_URL}/category/${category.slug}` }]
+            : []),
+          { name: article.title, url: `${BASE_URL}/articles/${article.slug}` },
+        ]}
+      />
+
       {/* Article Header */}
       <header className="relative h-[300px] md:h-[400px] bg-card">
         <div className="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-background/40" />
@@ -122,10 +174,10 @@ export default async function ArticlePage({ params }: PageProps) {
               {article.title}
             </h1>
             <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-              <span className="flex items-center gap-1">
+              <time dateTime={article.publishedAt || article.createdAt} className="flex items-center gap-1">
                 <Calendar className="h-4 w-4" />
                 {formatDate(article.publishedAt || article.createdAt)}
-              </span>
+              </time>
               <span className="flex items-center gap-1">
                 <Clock className="h-4 w-4" />
                 {readTimeValue} min read

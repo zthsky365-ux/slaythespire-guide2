@@ -1,14 +1,43 @@
 import { Suspense } from "react";
 import Link from "next/link";
+import type { Metadata } from "next";
 import { getPublishedArticles, getCategories, getAdPlacements } from "@/lib/db";
 import { Sidebar } from "@/components/layout/sidebar";
 import { ArticleGrid } from "@/components/articles/article-grid";
 import { AdBanner } from "@/components/ads/ad-banner";
 import { ArticleCard } from "@/components/articles/article-card";
+import { WebSiteJsonLd, OrganizationJsonLd } from "@/components/seo/json-ld";
 import { Sparkles, ChevronRight } from "lucide-react";
 
 // 每60秒重新验证缓存，确保新发布的内容能及时显示
 export const revalidate = 60;
+
+const BASE_URL = "https://www.sxdgame.com";
+
+export const metadata: Metadata = {
+  title: "Slay Guide - Slay the Spire 2 Strategy & Card Guides",
+  description:
+    "Your ultimate resource for Slay the Spire 2 guides, card strategies, character builds, and boss tactics. Master the spire with our comprehensive game guides.",
+  alternates: {
+    canonical: BASE_URL,
+  },
+  openGraph: {
+    title: "Slay Guide - Slay the Spire 2 Strategy & Card Guides",
+    description:
+      "Your ultimate resource for Slay the Spire 2 guides, card strategies, character builds, and boss tactics.",
+    url: BASE_URL,
+    type: "website",
+    siteName: "Slay Guide",
+    images: [
+      {
+        url: `${BASE_URL}/og`,
+        width: 1200,
+        height: 630,
+        alt: "Slay Guide - Slay the Spire 2 Strategy Guides",
+      },
+    ],
+  },
+};
 
 export default async function HomePage() {
   const [articles, categories, ads] = await Promise.all([
@@ -38,6 +67,10 @@ export default async function HomePage() {
 
   return (
     <div className="min-h-screen">
+      {/* Structured Data */}
+      <WebSiteJsonLd />
+      <OrganizationJsonLd />
+
       {/* Hero Section */}
       <section className="relative py-16 md:py-24 bg-gradient-to-b from-primary/10 via-background to-background">
         <div className="container mx-auto px-4 text-center">

@@ -6,6 +6,21 @@ import { Search as SearchIcon } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { ArticleGrid } from "@/components/articles/article-grid";
 import type { Article, Category } from "@/lib/types";
+import type { Metadata } from "next";
+
+export function generateMetadata(): Metadata {
+  return {
+    title: "Search Guides",
+    description: "Search for Slay the Spire 2 guides, card strategies, character builds, and boss tactics.",
+    alternates: {
+      canonical: "https://www.sxdgame.com/search",
+    },
+    openGraph: {
+      title: "Search Guides - Slay the Spire 2",
+      description: "Search for Slay the Spire 2 guides, card strategies, character builds, and boss tactics.",
+    },
+  };
+}
 
 function SearchContent() {
   const searchParams = useSearchParams();

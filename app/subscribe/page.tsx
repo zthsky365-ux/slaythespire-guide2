@@ -1,9 +1,23 @@
 import Link from "next/link";
 import type { Metadata } from "next";
 
+const BASE_URL = "https://www.sxdgame.com";
+
 export const metadata: Metadata = {
-  title: "Subscribe - Slay the Spire Guide",
-  description: "Subscribe to our newsletter for the latest Slay the Spire guides and tips.",
+  title: "Subscribe to Newsletter",
+  description: "Subscribe to the Slay Guide newsletter for the latest Slay the Spire 2 guides, strategies, and tips.",
+  alternates: {
+    canonical: `${BASE_URL}/subscribe`,
+  },
+  openGraph: {
+    title: "Subscribe - Slay Guide Newsletter",
+    description: "Get the latest Slay the Spire 2 guides, strategies, and tips delivered to your inbox.",
+    url: `${BASE_URL}/subscribe`,
+  },
+  robots: {
+    index: true,
+    follow: false,
+  },
 };
 
 export default function SubscribePage() {
