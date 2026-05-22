@@ -105,10 +105,10 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
     setLightbox({ src, alt });
   }, []);
 
-  // 预处理内容：确保 image-gallery 的 data-cols 属性存在
+  // 预处理内容：没有 data-cols 时默认设为 2，已有则保留原值
   const processedContent = article.content.replace(
-    /<div\s+class="image-gallery"\s*>/g,
-    '<div class="image-gallery" data-cols="2">'
+    /<div\s+class="image-gallery"(?![^>]*\bdata-cols\b)[^>]*>/g,
+    (match) => match.replace(/>$/, ' data-cols="2">')
   );
 
   return (
@@ -205,10 +205,12 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                     );
                   }
 
-                  // 普通独立图片：完整 lightbox 渲染
+                  // 普通独立图片：完整 lightbox 渲染，尊重用户设定的尺寸
+                  // 用户设了 width 则不强制 max-w-full
+                  const hasCustomWidth = parsedStyle.width || parsedStyle.maxWidth;
                   return (
                     <span
-                      className="my-4 block group relative cursor-zoom-in inline-block w-full"
+                      className="my-4 block group relative cursor-zoom-in"
                       onClick={() => openLightbox(imgSrc, alt || "")}
                     >
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg z-10 flex items-center justify-center pointer-events-none">
@@ -218,8 +220,16 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        style={{ maxHeight: "500px", objectFit: "contain", ...parsedStyle }}
-                        className="max-w-full h-auto rounded-lg mx-auto cursor-zoom-in"
+                        style={{
+                          maxHeight: "500px",
+                          objectFit: "contain",
+                          ...parsedStyle,
+                        }}
+                        className={
+                          hasCustomWidth
+                            ? "h-auto rounded-lg mx-auto cursor-zoom-in"
+                            : "max-w-full h-auto rounded-lg mx-auto cursor-zoom-in"
+                        }
                         loading="lazy"
                       />
                       {alt ? (
