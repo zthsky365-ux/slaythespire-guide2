@@ -200,22 +200,20 @@
   @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
 }
 
-/* 画廊内的 span（Markdown 段落包裹层）— 仅重置 margin */
+/* 画廊内的 span（Markdown 段落包裹层）— 重置 margin，让图片居中 */
 .image-gallery span {
   margin-top: 0;
   margin-bottom: 0;
-  overflow: hidden;
+  display: flex;
+  justify-content: center;
 }
 
-/* 画廊内的图片：不强制宽度，保留用户内联 style 设置的 width 值 */
-/* 仅在图片没有设置内联 width 时才默认撑满容器 */
+/* 画廊内图片：默认撑满单元格（grid 已控制列数），高度自适应 */
 .image-gallery img {
+  width: 100% !important;
   height: auto !important;
   max-width: none !important;
   object-fit: contain;
-}
-.image-gallery img[style*="width"] {
-  /* 有内联 width 的图片，尊重用户设定，不做任何覆盖 */
 }
 
 /* 画廊内段落说明文字 */
