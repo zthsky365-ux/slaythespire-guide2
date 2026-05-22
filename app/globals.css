@@ -194,7 +194,8 @@
 
 /* 画廊内的图片样式 */
 .image-gallery span {
-  @apply my-0 !important;
+  margin-top: 0;
+  margin-bottom: 0;
 }
 
 .image-gallery img {
