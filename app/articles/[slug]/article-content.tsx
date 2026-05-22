@@ -214,7 +214,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                     );
                   }
 
-                  // 普通独立图片：完整 lightbox 渲染，尊重用户设定的尺寸
+                  // 普通独立图片：完全由后台 style 控制尺寸，不做任何硬编码限制
                   return (
                     <span
                       className="my-4 block group relative cursor-zoom-in"
@@ -227,15 +227,11 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        style={{
-                          maxHeight: "500px",
-                          objectFit: "contain",
-                          ...parsedStyle,
-                        }}
+                        style={Object.keys(parsedStyle).length > 0 ? parsedStyle : undefined}
                         className={
                           hasCustomWidth
-                            ? "h-auto rounded-lg mx-auto cursor-zoom-in"
-                            : "max-w-full h-auto rounded-lg mx-auto cursor-zoom-in"
+                            ? "h-auto rounded-lg cursor-zoom-in"
+                            : "max-w-full h-auto rounded-lg cursor-zoom-in"
                         }
                         loading="lazy"
                       />
