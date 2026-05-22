@@ -197,13 +197,22 @@
 }
 
 .image-gallery[data-cols="4"] {
-  @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-4;
+  @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
 }
 
 /* 画廊内的 span（Markdown 段落包裹层）— 仅重置 margin */
 .image-gallery span {
   margin-top: 0;
   margin-bottom: 0;
+  overflow: hidden;
+}
+
+/* 画廊内图片强制响应式：宽度100%，高度自适应 */
+.image-gallery img {
+  width: 100% !important;
+  height: auto !important;
+  max-width: none !important;
+  object-fit: contain;
 }
 
 /* 画廊内段落说明文字 */
