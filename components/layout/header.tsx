@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useState, useEffect, useRef } from "react";
 import { Search, Menu, X, Sword, LogIn, LogOut, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,9 +10,13 @@ import { LanguageSwitcher } from "@/components/language-switcher";
 import { useLanguage } from "@/components/language-provider";
 
 export function Header() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const mobileSearchRef = useRef<HTMLInputElement>(null);
   const { t } = useLanguage();
 
   useEffect(() => {
@@ -32,6 +37,26 @@ export function Header() {
       window.location.href = "/login";
     } catch (error) {
       console.error("Logout failed:", error);
+    }
+  };
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (query) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+      setIsSearchOpen(false);
+      setSearchQuery("");
+    }
+  };
+
+  const handleMobileSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    const query = searchQuery.trim();
+    if (query) {
+      router.push(`/search?q=${encodeURIComponent(query)}`);
+      setIsMenuOpen(false);
+      setSearchQuery("");
     }
   };
 
@@ -95,8 +120,11 @@ export function Header() {
 
             <div className="hidden md:block relative">
               {isSearchOpen ? (
-                <div className="absolute right-0 top-1/2 -translate-y-1/2 w-64 animate-fade-in">
+                <form onSubmit={handleSearch} className="absolute right-0 top-1/2 -translate-y-1/2 w-64 animate-fade-in">
                   <Input
+                    ref={searchRef}
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder={t("search.placeholder")}
                     className="pr-10"
                     autoFocus
@@ -110,7 +138,7 @@ export function Header() {
                   >
                     <X className="h-4 w-4" />
                   </Button>
-                </div>
+                </form>
               ) : (
                 <Button
                   variant="ghost"
@@ -146,12 +174,15 @@ export function Header() {
                   {item.label}
                 </Link>
               ))}
-              <div className="px-4 pt-2">
+              <form onSubmit={handleMobileSearch} className="px-4 pt-2">
                 <Input
+                  ref={mobileSearchRef}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t("search.placeholder")}
                   className="w-full"
                 />
-              </div>
+              </form>
             </div>
           </nav>
         )}

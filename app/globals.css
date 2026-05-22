@@ -171,6 +171,40 @@
   @apply text-purple-400 hover:text-purple-300 underline;
 }
 
+/* ===== 图片画廊布局样式 ===== */
+.image-gallery {
+  @apply grid gap-3 my-6;
+}
+
+.image-gallery[data-cols="1"] {
+  @apply grid-cols-1;
+}
+
+.image-gallery[data-cols="2"] {
+  @apply grid-cols-1 md:grid-cols-2;
+}
+
+.image-gallery[data-cols="3"] {
+  @apply grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+}
+
+.image-gallery[data-cols="4"] {
+  @apply grid-cols-2 sm:grid-cols-3 lg:grid-cols-4;
+}
+
+/* 画廊内的图片样式 */
+.image-gallery span {
+  @apply my-0 !important;
+}
+
+.image-gallery img {
+  @apply w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity;
+}
+
+.image-gallery p {
+  @apply text-center text-xs my-1;
+}
+
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
