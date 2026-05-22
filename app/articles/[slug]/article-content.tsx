@@ -185,7 +185,9 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                 img: ({ src, alt, ...rest }) => {
                   const imgSrc = String(src || "");
                   const htmlProps = rest as Record<string, unknown>;
-                  const styleStr = (htmlProps?.style as string) || "";
+                  // style 可能是 string 或 object，统一转字符串
+                  const rawStyle = htmlProps?.style;
+                  const styleStr = typeof rawStyle === "string" ? rawStyle : "";
                   // 解析 HTML 上的内联样式
                   const parsedStyle = styleStr ? parseStyleString(styleStr) : {};
 
@@ -216,7 +218,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        style={{ maxHeight: "500px", objectFit: "contain", ...(styleStr ? parseStyleString(styleStr) : {}) }}
+                        style={{ maxHeight: "500px", objectFit: "contain", ...parsedStyle }}
                         className="max-w-full h-auto rounded-lg mx-auto cursor-zoom-in"
                         loading="lazy"
                       />
