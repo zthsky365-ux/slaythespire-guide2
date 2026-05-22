@@ -115,17 +115,41 @@ export default function ArticlesPage() {
         featured: editingArticle.featured || false,
         publishedAt: editingArticle.status === "published" ? (editingArticle.publishedAt || new Date().toISOString()) : null,
       };
+
+      console.log("[handleSave] Sending articleData:", JSON.stringify(articleData, null, 2));
       
-      await fetch("/api/articles", {
+      const response = await fetch("/api/articles", {
         method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(articleData),
       });
+
+      if (!response.ok) {
+        const errBody = await response.json().catch(() => ({}));
+        console.error("[handleSave] API error:", response.status, errBody);
+        alert(`保存失败: ${errBody?.error || response.statusText} (${response.status})`);
+        return;
+      }
+
+      const savedArticle = await response.json();
+      console.log("[handleSave] Saved article response coverImage:", savedArticle?.coverImage);
+
+      // 如果是已发布文章且首页使用 ISR，强制刷新首页缓存
+      if (savedArticle?.status === "published") {
+        console.log("[handleSave] Revalidating homepage cache...");
+        try {
+          await fetch("/api/revalidate?paths=/");
+        } catch (revalError) {
+          console.warn("[handleSave] Revalidation call failed (non-fatal):", revalError);
+        }
+      }
+
       setIsDialogOpen(false);
       setEditingArticle(null);
       fetchData();
     } catch (error) {
       console.error("Failed to save article:", error);
+      alert(`保存失败: ${error instanceof Error ? error.message : "未知错误"}`);
     }
   };
 

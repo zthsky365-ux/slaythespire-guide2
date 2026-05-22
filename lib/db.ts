@@ -214,7 +214,7 @@ export async function updateArticle(id: string, data: Partial<{
   if (data.content !== undefined) { fields.push(`content = $${i++}`); values.push(data.content); }
   if (data.excerpt !== undefined) { fields.push(`excerpt = $${i++}`); values.push(data.excerpt); }
   if (data.categoryId !== undefined) { fields.push(`category_id = $${i++}`); values.push(data.categoryId); }
-  if (data.coverImage !== undefined) { fields.push(`cover_image = $${i++}`); values.push(data.coverImage); }
+  if (data.coverImage !== undefined) { fields.push(`cover_image = $${i++}`); values.push(data.coverImage); console.log(`[updateArticle] Setting cover_image =`, data.coverImage); }
   if (data.tags !== undefined) { fields.push(`tags = $${i++}`); values.push(data.tags); }
   if (data.status !== undefined) { fields.push(`status = $${i++}`); values.push(data.status); }
   if (data.featured !== undefined) { fields.push(`featured = $${i++}`); values.push(data.featured); }

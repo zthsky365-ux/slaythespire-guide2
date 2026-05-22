@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getPublishedArticles, getArticles, createArticle, updateArticle, deleteArticle } from "@/lib/db";
 import { slugify } from "@/lib/utils";
 
@@ -39,6 +40,16 @@ export async function POST(request: Request) {
       publishedAt: status === "published" ? new Date().toISOString() : null,
     });
 
+    // 如果直接发布，清除首页缓存
+    if (status === "published") {
+      try {
+        revalidatePath("/");
+        console.log("[POST /api/articles] Revalidated ISR cache for '/'");
+      } catch (revalError) {
+        console.warn("[POST /api/articles] revalidatePath failed:", revalError);
+      }
+    }
+
     return NextResponse.json(article, { status: 201 });
   } catch (error) {
     console.error("Error creating article:", error);
@@ -50,6 +61,10 @@ export async function PUT(request: Request) {
   try {
     const body = await request.json();
     const { id, ...data } = body;
+
+    console.log("[PUT /api/articles] body keys:", Object.keys(body));
+    console.log("[PUT /api/articles] id:", id);
+    console.log("[PUT /api/articles] data.coverImage =", data.coverImage);
 
     if (!id) {
       return NextResponse.json({ error: "Article ID is required" }, { status: 400 });
@@ -67,6 +82,17 @@ export async function PUT(request: Request) {
 
     if (!article) {
       return NextResponse.json({ error: "Article not found" }, { status: 404 });
+    }
+
+    console.log("[PUT /api/articles] Updated article coverImage:", article.coverImage);
+
+    // 清除首页和文章详情页的 ISR 缓存
+    try {
+      revalidatePath("/");
+      revalidatePath(`/articles/${article.slug}`);
+      console.log("[PUT /api/articles] Revalidated ISR cache for '/' and '/articles/" + article.slug + "'");
+    } catch (revalError) {
+      console.warn("[PUT /api/articles] revalidatePath failed:", revalError);
     }
 
     return NextResponse.json(article);
