@@ -268,7 +268,7 @@ export default function ArticlesPage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => window.open(`/articles/${article.slug}`, "_blank")}
+                          onClick={() => window.open(`/articles/${article.slug}?preview=true`, "_blank")}
                         >
                           <Eye className="h-4 w-4" />
                         </Button>

@@ -13,6 +13,7 @@ const BASE_URL = "https://www.sxdgame.com";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -75,23 +76,27 @@ export async function generateStaticParams() {
   }));
 }
 
-export default async function ArticlePage({ params }: PageProps) {
+export default async function ArticlePage({ params, searchParams }: PageProps) {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
-  
-  if (!article || article.status !== "published") {
+  const sp = await searchParams;
+  const isPreview = sp.preview === "true";
+
+  if (!article || (!isPreview && article.status !== "published")) {
     notFound();
   }
 
-  // Record view
-  await incrementViewCount(article.id);
-  await recordPageView({
-    articleId: article.id,
-    path: `/articles/${slug}`,
-    visitedAt: new Date().toISOString(),
-    userAgent: "server",
-    referrer: null,
-  });
+  // Record view (skip for preview/draft)
+  if (!isPreview) {
+    await incrementViewCount(article.id);
+    await recordPageView({
+      articleId: article.id,
+      path: `/articles/${slug}`,
+      visitedAt: new Date().toISOString(),
+      userAgent: "server",
+      referrer: null,
+    });
+  }
 
   const [categories, ads] = await Promise.all([
     getCategories(),
@@ -111,6 +116,12 @@ export default async function ArticlePage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen">
+      {/* Draft Preview Banner */}
+      {isPreview && (
+        <div className="bg-amber-500/90 text-black text-center py-2 text-sm font-medium">
+          Preview Mode — This article is currently a draft and not publicly visible.
+        </div>
+      )}
       {/* Structured Data */}
       <ArticleJsonLd
         article={article}
