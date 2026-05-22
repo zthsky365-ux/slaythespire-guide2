@@ -108,6 +108,8 @@ export default function ArticlesPage() {
         excerpt: editingArticle.excerpt,
         content: editingArticle.content,
         categoryId: editingArticle.categoryId,
+        coverImage: editingArticle.coverImage || null,
+        authorId: editingArticle.authorId,
         tags: editingArticle.tags || [],
         status: editingArticle.status,
         featured: editingArticle.featured || false,
