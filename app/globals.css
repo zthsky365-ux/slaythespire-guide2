@@ -198,8 +198,12 @@
   margin-bottom: 0;
 }
 
+/* 画廊内图片：默认完整显示，不裁剪 */
 .image-gallery img {
-  @apply w-full h-48 object-cover rounded-lg hover:opacity-90 transition-opacity;
+  @apply w-full h-auto object-contain rounded-lg cursor-zoom-in;
+}
+.image-gallery img:hover {
+  opacity: 0.9;
 }
 
 .image-gallery p {

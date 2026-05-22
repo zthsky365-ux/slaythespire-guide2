@@ -186,15 +186,17 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   const imgSrc = String(src || "");
                   const htmlProps = rest as Record<string, unknown>;
                   const styleStr = (htmlProps?.style as string) || "";
+                  // 解析 HTML 上的内联样式
+                  const parsedStyle = styleStr ? parseStyleString(styleStr) : {};
 
-                  // 画廊内部：简洁渲染，不加额外 span 包裹
+                  // 画廊内部：简洁渲染，透传 style 属性，不加额外 span 包裹
                   if (insideGallery.current) {
                     /* eslint-disable-next-line @next/next/no-img-element */
                     return (
                       <img
                         src={imgSrc}
                         alt={alt || ""}
-                        className="w-full h-auto object-cover rounded-lg cursor-zoom-in hover:opacity-90 transition-opacity"
+                        style={Object.keys(parsedStyle).length > 0 ? parsedStyle : undefined}
                         loading="lazy"
                         onClick={() => openLightbox(imgSrc, alt || "")}
                       />
