@@ -63,6 +63,9 @@ export const metadata: Metadata = {
   alternates: {
     canonical: BASE_URL,
   },
+  verification: {
+    google: "uxSzTP_yndj-kbO7XEBNbi7j9YKwIOK5tfr9fNKmzek", // ⬅ 替换为 Google Search Console 提供的验证码
+  },
   robots: {
     index: true,
     follow: true,
