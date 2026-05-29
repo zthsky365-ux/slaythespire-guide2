@@ -209,9 +209,10 @@
 }
 
 /* 画廊内图片：无自定义 style 时默认撑满单元格，有用户 style 则由用户控制 */
-.image-gallery img {
-  /* 不用 !important — 用户内联 style 优先，否则 fallback 到组件默认值 */
+.image-gallery > img {
+  display: block;
   object-fit: contain;
+  /* 不用 !important — 用户内联 style 优先，否则 fallback 到组件默认值 */
 }
 
 /* 画廊内段落说明文字 */

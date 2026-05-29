@@ -10,7 +10,7 @@ import remarkGfm from "remark-gfm";
 import rehypeRaw from "rehype-raw";
 import { getImageUrl } from "@/lib/utils";
 import type { Article, AdPlacement } from "@/lib/types";
-import { useState, useCallback, useRef } from "react";
+import { useState, useCallback, useRef, Children, isValidElement } from "react";
 
 interface ArticleContentProps {
   article: Article;
@@ -105,11 +105,24 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
     setLightbox({ src, alt });
   }, []);
 
-  // 预处理内容：没有 data-cols 时默认设为 2，已有则保留原值
-  const processedContent = article.content.replace(
-    /<div\s+class="image-gallery"(?![^>]*\bdata-cols\b)[^>]*>/g,
-    (match) => match.replace(/>$/, ' data-cols="2">')
-  );
+  // 预处理内容：
+  // 1. 没有 data-cols 时默认设为 2
+  // 2. 移除画廊 div 内部空行，防止 markdown 解析器把 <img> 包进 <p> 标签破坏 grid 布局
+  const processedContent = article.content
+    // 给缺少 data-cols 的画廊补默认值
+    .replace(
+      /<div\s+class="image-gallery"(?![^>]*\bdata-cols\b)[^>]*>/g,
+      (match) => match.replace(/>$/, ' data-cols="2">')
+    )
+    // 移除 image-gallery div 内部空行（空白行会导致每个 img 被包进 <p>）
+    .replace(
+      /(<div\s+class="image-gallery"[^>]*>)([\s\S]*?)(<\/div>)/g,
+      (_, open, inner, close) => {
+        // 移除纯空行（只含空白字符的行）
+        const cleaned = inner.replace(/\n\s*\n/g, '\n');
+        return open + cleaned + close;
+      }
+    );
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -157,9 +170,19 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   <h3 className="text-xl font-semibold text-purple-300 mb-3 mt-6">{children}</h3>
                 ),
                 p: ({ children, ...rest }) => {
-                  // 如果在 gallery 内部，p 标签不加额外 margin（避免影响 grid）
+                  // 如果在 gallery 内部：
+                  // - 只包含图片（无文字）→ 跳过 <p> 包裹，让 img 成为 grid 直接子元素
+                  // - 包含文字 → 保留 <p> 作为说明文字
                   const props = rest as Record<string, unknown>;
                   if (insideGallery.current) {
+                    const childArray = Children.toArray(children);
+                    const hasText = childArray.some(
+                      (c) => typeof c === "string" && c.trim().length > 0
+                    );
+                    if (!hasText) {
+                      // 纯图片，直接传递 children 不包裹
+                      return <>{children}</>;
+                    }
                     return <p className="text-center text-xs text-muted-foreground my-1">{children}</p>;
                   }
                   return <p className="text-gray-300 mb-4 leading-relaxed">{children}</p>;
@@ -245,12 +268,19 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   );
                 },
                 div: ({ node, children, ...props }) => {
-                  const htmlProps = (node?.properties || props) as Record<string, unknown>;
+                  const nodeProps = (node?.properties || {}) as Record<string, unknown>;
+                  const restProps = props as Record<string, unknown>;
+                  // data-cols 可能在 node.properties 或 ...props 中（取决于 rehype-raw 和 react-markdown 的交互）
+                  const rawCols = String(
+                    nodeProps?.["data-cols"] ||
+                    restProps?.["data-cols"] ||
+                    restProps?.["dataCols"] ||
+                    "2"
+                  );
+                  const cols = Math.min(parseInt(rawCols, 10) || 2, 4);
 
-                  // 图片画廊布局
-                  if (hasClass(htmlProps, "image-gallery")) {
-                    const rawCols = String(htmlProps?.["data-cols"] || "2");
-                    const cols = Math.min(parseInt(rawCols, 10) || 2, 4);
+                  // 图片画廊布局 — 用 node 的 className 检查，因为 rehype-raw 可能把 class 塞到 node.properties.className
+                  if (hasClass(nodeProps, "image-gallery") || hasClass(restProps, "image-gallery")) {
                     const colClasses: Record<number, string> = {
                       1: "grid-cols-1",
                       2: "grid-cols-1 sm:grid-cols-2",
@@ -273,7 +303,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                   }
 
                   // 图片带标题容器
-                  if (hasClass(htmlProps, "image-with-caption")) {
+                  if (hasClass(nodeProps, "image-with-caption") || hasClass(restProps, "image-with-caption")) {
                     return (
                       <div className="my-6 border border-border/50 rounded-xl overflow-hidden bg-card/50">
                         {children}
