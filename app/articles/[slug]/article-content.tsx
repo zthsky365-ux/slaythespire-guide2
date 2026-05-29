@@ -218,10 +218,10 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                     );
                   }
 
-                  // 普通独立图片：完全由后台 style 控制，不做任何硬编码限制
+                  // 普通独立图片：有自定义 style 则使用，否则给默认约束防止溢出
                   return (
                     <span
-                      className="my-4 block group relative cursor-zoom-in"
+                      className="my-4 block group relative cursor-zoom-in max-w-full"
                       onClick={() => openLightbox(imgSrc, alt || "")}
                     >
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg z-10 flex items-center justify-center pointer-events-none">
@@ -234,7 +234,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
                         style={
                           Object.keys(parsedStyle).length > 0
                             ? parsedStyle
-                            : undefined
+                            : { maxWidth: "100%", height: "auto", width: "auto", display: "block" }
                         }
                         loading="lazy"
                       />
