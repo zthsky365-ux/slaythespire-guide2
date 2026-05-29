@@ -208,11 +208,9 @@
   justify-content: center;
 }
 
-/* 画廊内图片：默认撑满单元格（grid 已控制列数），高度自适应 */
+/* 画廊内图片：无自定义 style 时默认撑满单元格，有用户 style 则由用户控制 */
 .image-gallery img {
-  width: 100% !important;
-  height: auto !important;
-  max-width: none !important;
+  /* 不用 !important — 用户内联 style 优先，否则 fallback 到组件默认值 */
   object-fit: contain;
 }
 
