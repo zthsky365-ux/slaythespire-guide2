@@ -108,6 +108,7 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
   // 预处理内容：
   // 1. 没有 data-cols 时默认设为 2
   // 2. 移除画廊 div 内部空行，防止 markdown 解析器把 <img> 包进 <p> 标签破坏 grid 布局
+  // 3. 独立成行的 **加粗文字** 自动转为 ### 标题（如 **Guardian** → ### Guarduan）
   const processedContent = article.content
     // 给缺少 data-cols 的画廊补默认值
     .replace(
@@ -118,10 +119,15 @@ export function ArticleContent({ article, contentAd, relatedArticles, ads }: Art
     .replace(
       /(<div\s+class="image-gallery"[^>]*>)([\s\S]*?)(<\/div>)/g,
       (_, open, inner, close) => {
-        // 移除纯空行（只含空白字符的行）
         const cleaned = inner.replace(/\n\s*\n/g, '\n');
         return open + cleaned + close;
       }
+    )
+    // 独立成行的 **加粗文字** → ### 标题
+    // 匹配：行首可选空白 + **文字** + 行尾可选空白（前后必须是换行或字符串边界）
+    .replace(
+      /^(?:\s*)\*\*(.+?)\*\*(?:\s*)$/gm,
+      '### $1'
     );
 
   return (
